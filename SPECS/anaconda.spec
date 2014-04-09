@@ -2,7 +2,7 @@
 
 Summary: Graphical system installer
 Name:    anaconda
-Version: 19.31.36
+Version: 19.31.77
 Release: 1%{?dist}
 License: GPLv2+
 Group:   Applications/System
@@ -21,7 +21,7 @@ Source0: %{name}-%{version}.tar.bz2
 %define gconfversion 2.28.1
 %define intltoolver 0.31.2-3
 %define libnlver 1.0
-%define pykickstartver  1.99.43.2
+%define pykickstartver  1.99.43.10
 %define yumver 3.4.3-91
 %define partedver 1.8.1
 %define pypartedver 2.5-2
@@ -40,7 +40,7 @@ Source0: %{name}-%{version}.tar.bz2
 %define iscsiver 6.2.0.870-3
 %define rpmver 4.10.0
 %define libarchivever 3.0.4
-%define langtablever 0.0.7-1
+%define langtablever 0.0.13-4
 
 BuildRequires: audit-libs-devel
 BuildRequires: gettext >= %{gettextver}
@@ -80,10 +80,11 @@ BuildRequires: s390utils-devel
 %endif
 
 Requires: anaconda-widgets = %{version}-%{release}
-Requires: python-blivet >= 0.18.10
+Requires: python-blivet >= 0.18.30
 Requires: gnome-icon-theme-symbolic
 Requires: python-meh >= %{mehver}
 Requires: libreport-anaconda >= 2.0.21-1
+Requires: libreport-rhel-anaconda-bugzilla >= 2.1.11-1
 Requires: libselinux-python
 Requires: rpm-python
 Requires: parted >= %{partedver}
@@ -107,6 +108,8 @@ Requires: pytz
 Requires: libxklavier
 Requires: libgnomekbd
 Requires: realmd
+Requires: teamd
+Requires: keybinder3
 %ifarch %livearches
 Requires: usermode
 Requires: zenity
@@ -117,15 +120,16 @@ Requires: openssh
 %endif
 Requires: isomd5sum >= %{isomd5sum}
 Requires: yum-utils >= %{yumutilsver}
+Requires: createrepo
 Requires: NetworkManager >= %{nmver}
 Requires: nm-connection-editor
 Requires: dhclient
-Requires: anaconda-yum-plugins
 Requires: kbd
 Requires: chrony
 Requires: ntpdate
 Requires: rsync
 Requires: hostname
+Requires: systemd
 %ifarch %{ix86} x86_64
 Requires: fcoe-utils >= %{fcoeutilsver}
 %endif
@@ -136,6 +140,9 @@ Requires: dmidecode
 Requires: hfsplus-tools
 %endif
 %endif
+
+Requires: python-coverage
+
 Obsoletes: anaconda-images <= 10
 Provides: anaconda-images = %{version}-%{release}
 Obsoletes: anaconda-runtime < %{version}-%{release}
@@ -252,6 +259,713 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Wed Apr 09 2014 Brian C. Lane <bcl@redhat.com> - 19.31.77-1
+- network: show ip of device with default route for vnc and ssh (rvykydal)
+  Resolves: rhbz#1083305
+
+* Mon Apr 07 2014 Brian C. Lane <bcl@redhat.com> - 19.31.76-1
+- network: adapt to NM fixing virtual device disconnection (rvykydal)
+  Resolves: rhbz#1084953
+
+* Tue Apr 01 2014 Brian C. Lane <bcl@redhat.com> - 19.31.75-1
+- Display WWIDs in the filter UI for FCoE devices (clumens).
+  Resolves: rhbz#1080316
+- Make it possible to override translation domain in GUIObjects (mkolman).
+  Related: rhbz#1040240
+
+* Fri Mar 28 2014 Brian C. Lane <bcl@redhat.com> - 19.31.74-1
+- network: don't crash on virtual devices turned off (rvykydal)
+  Resolves: rhbz#1080640
+- Do not try to set keyboard preview dialog's size (vpodzime)
+  Resolves: rhbz#1011140
+
+* Thu Mar 27 2014 Brian C. Lane <bcl@redhat.com> - 19.31.73-1
+- Add a list of cmdline args that append instead of replace (bcl)
+  Related: rhbz#1073130
+
+* Mon Mar 24 2014 Brian C. Lane <bcl@redhat.com> - 19.31.72-1
+- Check boot args for None (bcl)
+  Related: rhbz#1073130
+  Resolves: rhbz#1075918
+- network: don't pop HWADDR twice for vlan on s390 (rvykydal)
+  Related: rhbz#1061646
+
+* Fri Mar 21 2014 Brian C. Lane <bcl@redhat.com> - 19.31.71-1
+- driverdisk: Show selection menu for network driver isos (bcl)
+  Resolves: rhbz#1075918
+
+* Wed Mar 19 2014 Brian C. Lane <bcl@redhat.com> - 19.31.70-1
+- Write a modprobe blacklist (bcl)
+  Resolves: rhbz#1073130
+- Append cmdline arg values in BootArgs (bcl)
+  Related: rhbz#1073130
+- Only the Summary TUI hub wants to accept 'b' to continue (vpodzime)
+  Resolves: rhbz#1077546
+
+* Tue Mar 18 2014 Brian C. Lane <bcl@redhat.com> - 19.31.69-1
+- Convert iter from filter model iter to backing store iter (amulhern)
+  Resolves: rhbz#1074188
+
+* Fri Mar 14 2014 Brian C. Lane <bcl@redhat.com> - 19.31.68-1
+- Revert "Refresh after checkbox clicked (amulhern)"
+  Related: rhbz#1074188
+- Wait for other threads to finish before sending ready (bcl)
+  Resolves: rhbz#1075103
+
+* Tue Mar 11 2014 Brian C. Lane <bcl@redhat.com> - 19.31.67-1
+- driver-updates: accept burned driver discs (wwoods)
+  Resolves: rhbz#1073719
+- Refresh after checkbox clicked (amulhern)
+  Resolves: rhbz#1074188
+- Don't create bootloader entries for kdump initrd and kernel.
+  (sbueno+anaconda)
+  Resolves: rhbz#1036086
+- Cover both possible ways that GUI WWID may have been set (amulhern)
+  Resolves: rhbz#1074184
+- network: apply ks configuration to devices activated in initramfs (rvykydal)
+  Resolves: rhbz#1037605
+- Make it obvious user is going to begin installation. (sbueno+anaconda)
+  Resolves: rhbz#975793
+- Fix error handling in cmdline mode. (sbueno+anaconda)
+  Resolves: rhbz#1034773
+- Do nothing if previously selected selector gets focus again (vpodzime)
+  Resolves: rhbz#1029798
+
+* Fri Mar 07 2014 Brian C. Lane <bcl@redhat.com> - 19.31.66-1
+- set proxy related environmental variables (bcl)
+  Resolves: rhbz#854029
+- network: handle race condition of disappearing active connection (rvykydal)
+  Resolves: rhbz#1073424
+- Do not write out /etc/adjtime file on s390(x) (vpodzime)
+  Resolves: rhbz#1070748
+- Don't traceback, just log a warning if connection is unavailable (mkolman)
+  Resolves: rhbz#1070928
+
+* Tue Mar 04 2014 Brian C. Lane <bcl@redhat.com> - 19.31.65-1
+- driver-updates: skip iso selection with OEMDRV (bcl)
+  Related: rhbz#1066784
+- driver-updates: allow interactive mode to load multiple devices (wwoods)
+  Related: rhbz#1066784
+- driver-updates: add DoRefresh loop to select_iso() (wwoods)
+  Resolves: rhbz#1066784
+- driver-updates: add 'refresh' to selection_menu() (wwoods)
+  Related: rhbz#1066784
+- driver-updates: rework 'dd_finished' handling (wwoods)
+  Related: rhbz#1066784
+- driver-updates: refactor dd_scan (wwoods)
+  Related: rhbz#1066784
+- driver-updates: refactor menu to allow other options (wwoods)
+  Related: rhbz#1066784
+- Bump blivet Requires for DASD changes. (sbueno+anaconda)
+  Related: rhbz#1064423
+- Add GUI and TUI logic to handle unformatted DASDs. (sbueno+anaconda)
+  Resolves: rhbz#1064423
+- Show unformatted DASDs in the local disk store. (sbueno+anaconda)
+  Resolves: rhbz#1064423
+- Add dialog box to warn about formatting DASDs. (sbueno+anaconda)
+  Resolves: rhbz#1064423
+- Update disk refs when recovering from a devicefactory failure. (dlehman)
+  Resolves: rhbz#1032141
+- network kickstart: do not bind to MAC if SUBCHANNELS are present (rvykydal)
+  Resolves: rhbz#1070232
+
+* Fri Feb 28 2014 Brian C. Lane <bcl@redhat.com> - 19.31.64-1
+- Fix console for s390 and 'noshell' mode (wwoods)
+  Resolves: rhbz#1070672
+- Set the name in the volume group store (dshea)
+  Resolves: rhbz#1070854
+- Always run efibootmgr from ROOT_PATH (bcl)
+  Resolves: rhbz#1054968
+- Only run gtk actions in the gtk thread. (dshea)
+  Resolves: rhbz#1067405
+- Don't ignore the directory of the driver disk iso file (vpodzime)
+  Related: rhbz#1036765
+
+* Wed Feb 26 2014 Brian C. Lane <bcl@redhat.com> - 19.31.63-1
+- Revert "Force reboot the system on cmdline error. (sbueno+anaconda)"
+  Related: rhbz#1034773
+- Revert "Make it obvious user is going to begin installation.
+  (sbueno+anaconda)"
+  Related: rhbz#975793
+- Add createrepo Requires (bcl)
+  Related: rhbz#1016004
+- ListStore.remove expects an iter, not an int (clumens).
+  Resolves: rhbz#1062752
+- Don't require network in standalone spoke for media installs (rvykydal)
+  Resolves: rhbz#1066807
+- Add support for kickstart --interfacename for vlans (rvykydal)
+  Resolves: rhbz#1061646
+- network: detect also fcoe vlan device names exceeding IFNAMESIZ (rvykydal)
+  Related: rhbz#1051268
+
+* Tue Feb 25 2014 Brian C. Lane <bcl@redhat.com> - 19.31.62-1
+- driverdisk: Create a repo for network drivers (bcl)
+  Resolves: rhbz#1016004
+- fix inst.noshell (wwoods)
+  Resolves: rhbz#1058607
+- Don't use tmux for inst.noshell (wwoods)
+  Resolves: rhbz#1058607
+- driverdisk: Catch blkid failure (bcl)
+  Related: rhbz#1036765
+- driverdisk: Ignore extra blkid fields (bcl)
+  Resolves: rhbz#1036765
+- We can't trust rhcrashkernel-param to give us newline-free text. (pjones)
+  Related: rhbz#814813
+- Enable python-coverage in anaconda (dshea)
+  Resolves: rhbz#1066339
+- Remove redundant _setCurrentFreeSpace() call (amulhern)
+  Related: rhbz#1043763
+- Ensure media being verified is always unmounted (dshea)
+  Resolves: rhbz#1050943
+- Write 'text'/'cmdline' in anaconda-ks.cfg in text/cmdline mode (wwoods)
+  Related: rhbz#1021963
+- text install -> text system (wwoods)
+  Resolves: rhbz#1021963
+- Support the 'skipx' kickstart command (wwoods)
+  Related: rhbz#1021963
+- setup default environment in initialize instead of refresh (bcl)
+  Resolves: rhbz#1066972
+- Fix a nitpick from bcl. (pjones)
+  Related: rhbz#814813
+- Force reboot the system on cmdline error. (sbueno+anaconda)
+  Resolves: rhbz#1034773
+- Make rhcrashkernel-param get run on non-GRUB 2 platforms. (pjones)
+  Resolves: rhbz#814813
+- fix typo, extra bracket (bcl)
+  Resolves: rhbz#1067758
+- Do not use shim.efi on ARMv8 aarch64 (dmarlin)
+  Resolves: rhbz#1067758
+- Handle missing environments specified through kickstart (clumens).
+  Resolves: rhbz#1067492
+- Add 'c' to continue to timezone TUI spoke. (sbueno+anaconda)
+  Resolves: rhbz#979335
+- Make it obvious user is going to begin installation. (sbueno+anaconda)
+  Resolves: rhbz#975793
+
+* Fri Feb 21 2014 Brian C. Lane <bcl@redhat.com> - 19.31.61-1
+- Skip running efibootmgr for image and dir installations (bcl)
+  Resolves: rhbz#1067749
+- reiserfs is not supported (bcl)
+  Resolves: rhbz#1066635
+- Show hidden disk images (bcl)
+  Resolves: rhbz#1034996
+- remove epdb SIGHUP debug handler (bcl)
+  Related: rhbz#1065557
+- Preserve ipv6.disable=1 on target system (wwoods)
+  Resolves: rhbz#1040751
+- Check that s390x LVM configuration is valid. (sbueno+anaconda)
+  Resolves: rhbz#873135
+  Resolves: rhbz#885011
+- Re-apply disk selection on error in TUI storage. (sbueno+anaconda)
+  Resolves: rhbz#1056316
+- Disable tmpfs in the GUI (mkolman)
+  Resolves: rhbz#1061666
+- Change the CSS class name of the sidebar (clumens).
+  Resolves: rhbz#1067049
+- Error on "bootloader --location=partition" when using grub2 (clumens).
+  Resolves: rhbz#969095
+- Fix heredoc usage in generated /etc/grub.d/01_users (dcantrell).
+  Resolves: rhbz#1044404
+
+* Tue Feb 18 2014 Brian C. Lane <bcl@redhat.com> - 19.31.60-1
+- Set mandatory property in network tui spoke. (sbueno+anaconda)
+  Resolves: rhbz#1064139
+- Disallow /boot on RAID on s390x. (sbueno+anaconda)
+  Resolves: rhbz#1027670
+- Use devicetree.resolveDevice instead of udev_resolve_devspec. (dlehman)
+  Resolves: rhbz#1047338
+- Set ThreadManager.any_errors to be a property (dshea)
+  Resolves: rhbz#1066467
+- driverdisk: Parse all blkid output (bcl)
+  Resolves: rhbz#857248
+  Related: rhbz#1036765
+- Use vc_keymap as X layout only if we get nothing from localed (vpodzime)
+  Resolves: rhbz#1066018
+- Tell libreport if it is a final release or not (vpodzime)
+  Resolves: rhbz#1063690
+- Fix blkid output parsing and our output (vpodzime)
+  Related: rhbz#1036765
+
+* Fri Feb 14 2014 Brian C. Lane <bcl@redhat.com> - 19.31.59-1
+- Allow using globs and alternative paths for specifying boot drive (clumens).
+  Resolves: rhbz#1057282
+- Remove app_paintable from a couple nav boxes (clumens).
+  Resolves: rhbz#1064708
+- Allow catching exceptions from threads (vpodzime)
+  Resolves: rhbz#1063705
+
+* Tue Feb 11 2014 Brian C. Lane <bcl@redhat.com> - 19.31.58-1
+- adding support for new rhel7 branding graphics (duffy)
+  Related: rhbz#1045250
+- Properly retry package downloads (mkolman)
+  Resolves: rhbz#924860
+- Mark language search string in welcome spoke translatable. (sbueno+anaconda)
+  Resolves: rhbz#955229
+- Automatically reboot after successful cmdline installation. (sbueno+anaconda)
+  Resolves: rhbz#1056507
+- dracut: add when_any_cdrom_appears for cdrom autoprobe (wwoods)
+  Resolves: rhbz#1049237
+- Update the Aarch64 packages to include efibootmgr (dmarlin)
+  Resolves: rhbz#1061927
+- kickstart user accounts should be locked by default (bcl)
+  Resolves: rhbz#1063554
+- Move save_netinfo into a hook (bcl)
+  Resolves: rhbz#1048231
+- Fix kickstart 'updates' command (wwoods)
+  Resolves: rhbz#999898
+- Make sure LUKS devices can say they have a key (amulhern)
+  Resolves: rhbz#1060255
+- Handle LUKS passphrase before doing sanity check (amulhern)
+  Resolves: rhbz#1060255
+- Remove some unnecessary resets (amulhern)
+  Related: rhbz#1060255
+- Do not consider no available LUKS passphrase an error in do_autopart
+  (amulhern)
+  Resolves: rhbz#1060255
+- Adapt to new blivet.sanityCheck() return type (amulhern)
+  Related: rhbz#1060255
+- Adapt StorageChecker class for changed return type of sanityCheck (amulhern)
+  Related: rhbz#1060255
+- Add sanityCheck functionality back into AutoPart.execute() (amulhern)
+  Related: rhbz#1060255
+- Bump blivet version for changed sanityCheck() interface (amulhern)
+  Related: rhbz#1060255
+- Removed unused ErrorRecoveryFailure import (amulhern)
+  Related: rhbz#1060255
+- network: adapt to changed handling of devices without carrier in NM
+  (rvykydal)
+  Resolves: rhbz#1062417
+- Once again fix cmdline error handling. (sbueno+anaconda)
+  Resolves: rhbz#1034773
+- On incomplete ks, don't automatically proceed with install. (sbueno+anaconda)
+  Resolves: rhbz#1034282
+- Add correct kernel params if rootfs is btrfs on s390x. (sbueno+anaconda)
+  Resolves: rhbz#874622
+
+* Fri Feb 07 2014 Brian C. Lane <bcl@redhat.com> - 19.31.57-1
+- driverdisk: Use a single systemd service to start DD UI (bcl)
+  Related: rhbz#1035663
+- driverdisk: Add dd_args_ks handling to driver-updates (bcl)
+  Resolves: rhbz#1035663
+- driverdisk: Process kickstart driverdisk commands (bcl)
+  Related: rhbz#1035663
+- driverdisk: Handle kickstart driverdisk command (bcl)
+  Related: rhbz#1035663
+- driverdisk: Use getargs instead of the env variable (bcl)
+  Related: rhbz#1035663
+- If a user has been created, don't allow entering the user spoke (clumens).
+  Resolves: rhbz#1058564
+- Fix crashes in the LayoutIndicator dispose function. (dshea)
+  Resolves: rhbz#1061206
+- Add support for fcoe --autovlan option (rvykydal)
+  Resolves: rhbz#1055779
+- Require systemd (dshea)
+  Resolves: rhbz#1060823
+- Remove the now-unused anaconda_spoke_header.png. (clumens)
+  Related: rhbz#1045250
+- Minor aesthetic cleanups (duffy).
+  Resolves: rhbz#1045250
+- Add a topbar design to SpokeWindows. (duffy)
+  Resolves: rhbz#1045250
+- Prevent kickstart parsing errors from ending up in boot options (mkolman)
+  Resolves: rhbz#1060184
+- Add a sidebar to the standalone and hub windows (duffy)
+  Resolves: rhbz#1045250
+- Allow specifying an environment in the kickstart file (clumens).
+  Resolves: rhbz#1050994
+- The autopart scheme combo should work for creating partitions manually, too.
+  (clumens)
+  Related: rhbz#1014671
+- Global screenshot support (mkolman)
+  Related: rhbz#1025038
+
+* Tue Feb 04 2014 Brian C. Lane <bcl@redhat.com> - 19.31.56-1
+- Add option help text for --image and --dirinstall flags (amulhern)
+  Resolves: rhbz#1056791
+- Search for service files of all first boot utilities (vpodzime)
+  Resolves: rhbz#1060698
+- Check RAID10 box for BTRFS (amulhern)
+  Resolves: rhbz#1021856
+- Remove unused import (amulhern)
+  Related: rhbz#1022497
+- Change the string used to test for serial console (dmarlin)
+  Resolves: rhbz#1054951
+
+* Fri Jan 31 2014 Brian C. Lane <bcl@redhat.com> - 19.31.55-1
+- Fix iscsi target selection checkbox in GUI (rvykydal)
+  Resolves: rhbz#1058653
+- Don't Require NetworkManager-config-server (rvykydal)
+  Resolves: rhbz#1012511
+  Related: rhbz#1012511
+- Set progress bar to 100 %% in a different way (vpodzime)
+  Resolves: rhbz#1058755
+- Do not add step for realmd if we are not gonna run it (vpodzime)
+  Related: rhbz#1058755
+- Make sure directory for DD extraction exists (vpodzime)
+  Related: rhbz#1016004
+- Removed unused variable (amulhern)
+  Resolves: rhbz#982164
+  Related: rhbz#982164
+- Handle --image arguments more thoroughly (amulhern)
+  Resolves: rhbz#982164
+- Style the Done button to make it more noticable (mizmo). (clumens)
+  Related: rhbz#1045250
+- Display free space remaining in containers (clumens).
+  Resolves: rhbz#1035832
+- If a root password is set, don't show the spoke (clumens).
+  Resolves: rhbz#1041405
+
+* Tue Jan 28 2014 Brian C. Lane <bcl@redhat.com> - 19.31.54-1
+- Set an upper limit on uids and gids. (dshea)
+  Resolves: rhbz#1053103
+- Change the reclaim space button rules (bcl)
+  Resolves: rhbz#980496
+  Related: rhbz#980496
+- Check the validity of generated usernames in TUI (dshea)
+  Resolves: rhbz#1058634
+- Allow capital letters in usernames (dshea)
+  Resolves: rhbz#1058638
+- Display custom part warnings/errors on the spoke itself (clumens).
+  Resolves: rhbz#975840
+- Use integer numbers of megabytes in the Reclaim dialog (vpodzime)
+  Resolves: rhbz#1034232
+- Fix pylint errors (dshea)
+  Related: rhbz#1021506
+- Move the Quit button to the right and make it consistently sized (clumens).
+  Resolves: rhbz#1038802
+- Change the product name we key off (clumens).
+  Resolves: rhbz#1055019
+- Don't include zero sized disks in the custom part UI either (clumens).
+  Resolves: rhbz#903131
+- "Delete All" on the reclaim dialog should not delete hdiso source (clumens).
+  Resolves: rhbz#980496
+- Add a scrollbar to the error dialog (clumens).
+  Resolves: rhbz#1021506
+- Don't show the language twice for keyboard layouts. (dshea)
+  Resolves: rhbz#1021849
+
+* Fri Jan 24 2014 Brian C. Lane <bcl@redhat.com> - 19.31.53-1
+- Put Xorg on tty6 in accordance with Ancient Anaconda Tradition (wwoods)
+  Resolves: rhbz#980062
+- handle "ks=cdrom[:<path>]" on systems with multiple CDs (wwoods)
+  Resolves: rhbz#1049237
+- Fix page logic in driver selection (bcl)
+  Resolves: rhbz#1055333
+- Fix problems going into custom partitioning with the new work flow. (clumens)
+  Related: rhbz#1014671
+- Allow going to the reclaim dialog even for autopart (clumens).
+  Resolves: rhbz#1014671
+- Add the autopart type combo to custom storage (clumens).
+  Resolves: rhbz#1014671
+- Tweak DiskOverview spacing a little bit (clumens).
+  Resolves: rhbz#1014671
+- Add custom part and encryption buttons to the main storage spoke (clumens).
+  Resolves: rhbz#1014671
+- Remove the existing install_options1 dialog, rename the others (clumens).
+  Resolves: rhbz#1014671
+- Extend the timeout period to 180s in the case of cmdline error.
+  (sbueno+anaconda)
+  Resolves: rhbz#1034773
+
+* Thu Jan 23 2014 Brian C. Lane <bcl@redhat.com> - 19.31.52-1
+- Only eject CDROM devices we're actually using (wwoods)
+  Resolves: rhbz#966495
+- Use validate_label to check whether label should be updated (mulhern)
+  Related: rhbz#1038590
+- Always reject label if the format exists (mulhern)
+  Related: rhbz#1038590
+- Make label field always sensitive (mulhern)
+  Related: rhbz#1038590
+- Give users way to select DD ISO interactively (vpodzime)
+  Resolves: rhbz#1036765
+- Save module list after initial module load (bcl)
+  Resolves: rhbz#1050352
+
+* Wed Jan 22 2014 Brian C. Lane <bcl@redhat.com> - 19.31.51-1
+- fcoe: add fcoe=<NIC>:<EDB> to boot options for nics added manually (rvykydal)
+  Resolves: rhbz#1040215
+- Be more liberal in what is accepted as a size unit. (dshea)
+  Resolves: rhbz#1039485
+- Set device.format.label field close to where we read it (amulhern)
+  Resolves: rhbz#1056139
+- network: set ONBOOT=yes for iface used during DVD (hd:) installation
+  (rvykydal)
+  Resolves: rhbz#1052898
+- Fix tb due to non-existant disk attr. (sbueno+anaconda)
+  Resolves: rhbz#1056019
+  Resolves: rhbz#1054746
+- Install the rpmrc file to the initrd.img (vpodzime)
+  Resolves: rhbz#1016004
+- Give users hint about VNC password restrictions (vpodzime)
+  Resolves: rhbz#1053546
+- Unlock encrypted partitions before finding installations (vpodzime)
+  Resolves: rhbz#1043783
+
+* Mon Jan 20 2014 Brian C. Lane <bcl@redhat.com> - 19.31.50-1
+- Use DataHolder for TUI nfs data (bcl)
+  Resolves: rhbz#1034427
+- Add DataHolder class (bcl)
+  Related: rhbz#1034427
+  Resolves: rhbz#1034427
+- Various changes to handling of filesystem label setting (mulhern)
+  Related: rhbz#1038590
+- Don't show actions next to free space lines in the reclaim dialog (clumens).
+  Resolves: rhbz#1054208
+- If there's a label in the ISO device combo, put it on a new line (clumens).
+  Resolves: rhbz#1031727
+- network: don't activate default auto connections after switchroot (rvykydal)
+  Resolves: rhbz#1012511
+- network ks: allow setting only hostname with network command (rvykydal)
+  Resolves: rhbz#1051564
+
+* Fri Jan 17 2014 Brian C. Lane <bcl@redhat.com> - 19.31.49-1
+- Show labels on Add zFCP dialog. (sbueno+anaconda)
+  Resolves: rhbz#1054675
+- Check for certain disk attrs before trying to access them. (sbueno+anaconda)
+  Resolves: rhbz#1053055
+- Change the name of the system z devices panel. (sbueno+anaconda)
+  Related: rhbz#1024949
+  Resolves: rhbz#1024949
+- Fix selector device matching for unallocated partitions. (dlehman)
+  Resolves: rhbz#1044523
+- Grow the spoke gradient image to fit the nav_area (clumens).
+  Resolves: rhbz#1035772
+- Remove the UID and GID maximums. (dshea)
+  Resolves: rhbz#1053103
+
+* Thu Jan 16 2014 Brian C. Lane <bcl@redhat.com> - 19.31.48-1
+- Return program output as a string instead of a list (dshea)
+  Resolves: rhbz#1054142
+
+* Thu Jan 16 2014 Vratislav Podzimek <vpodzime@redhat.com> - 19.31.47-1
+- Fix closest mirror showing up when it shouldn't (mkolman)
+  Resolves: rhbz#1031663
+- There is no raid module on rhel7-branch (vpodzime)
+  Related: rhbz#1052446
+- Skip empty layout-variant specifications when setting layouts (vpodzime)
+  Resolves: rhbz#1054083
+- Add left and right margins to the Progress hub (vpodzime)
+  Resolves: rhbz#1039556
+- Disallow /boot on btrfs subvolume until grubby supports it. (dlehman)
+  Resolves: rhbz#1052446
+- Decode potentially 8-bit strings in TUI windows (dshea)
+  Resolves: rhbz#1046836
+- Do not translate strings defined at the module or class level. (clumens)
+  Related: rhbz#1046836
+- Require package for proper reporting to RHEL bugzilla (vpodzime)
+  Related: rhbz#1015093
+
+* Tue Jan 14 2014 Brian C. Lane <bcl@redhat.com> - 19.31.46-1
+- Fix typo (bcl)
+  Resolves: rhbz#1032066
+
+* Tue Jan 14 2014 Brian C. Lane <bcl@redhat.com> - 19.31.45-1
+- Get rid of the clear button in advanced storage spoke. (sbueno+anaconda)
+  Related: rhbz#1024949
+  Resolves: rhbz#1024949
+- Fix failure to search by LUN in advanced storage spoke. (sbueno+anaconda)
+  Resolves: rhbz#1026822
+- Fix up the z Panel in advanced storage. (sbueno+anaconda)
+  Resolves: rhbz#1024949
+- Add support for adding zFCP devices in the GUI (sbueno+anaconda)
+  Resolves: rhbz#994423
+- Clean up rebase artifacts from previous commit. (dlehman)
+  Related: rhbz#1029630
+- Fix minimal install selection with incomplete kickstart (mkolman)
+  Resolves: rhbz#1032066
+- Disallow /boot on lvm until grub2 fully supports it. (dlehman)
+  Resolves: rhbz#967880
+- Handle cancelation of device resize in the custom spoke. (dlehman)
+  Resolves: rhbz#1029630
+- Handle non-leaf btrfs volumes with mountpoints. (dlehman)
+  Resolves: rhbz#1026210
+- Make sure to actually set the autopart flag when needed. (dlehman)
+  Resolves: rhbz#1023584
+- Make sure upper and lower bounds for resize are applied. (dlehman)
+  Resolves: rhbz#1023190
+- Disregard raid level combo when it isn't applicable. (dlehman)
+  Resolves: rhbz#1020370
+- Make the clear icon functional in language spoke. (sbueno+anaconda)
+  Resolves: rhbz#1051609
+- Remove the reference to "anaconda" in reIPL. (sbueno+anaconda)
+  Resolves: rhbz#1052167
+- Fix traceback on s390x bootloader install. (sbueno+anaconda)
+  Resolves: rhbz#1052167
+- Additional completion checks in network spoke. (sbueno+anaconda)
+  Resolves: rhbz#1044571
+- Fix interactive partitioning with incomplete kickstart (mkolman)
+  Resolves: rhbz#1032124
+
+* Mon Jan 13 2014 Brian C. Lane <bcl@redhat.com> - 19.31.44-1
+- Be more defensive when getting layouts and their variants (vpodzime)
+  Related: rhbz#1024774
+- Implement and use functions for conversion between keymaps and layouts
+  (vpodzime)
+  Related: rhbz#1024774
+- Provide our own sorting functions for regions and timezones (vpodzime)
+  Resolves: rhbz#1025029
+- Translate timezones in GUI (vpodzime)
+  Resolves: rhbz#1015209
+- Make layout and switching options description translated (vpodzime)
+  Resolves: rhbz#1015209
+- Update dumping of network info for new nmcli interface (rvykydal)
+  Resolves: rhbz#1048166
+- network: do not crash when device for network --device is not found
+  (rvykydal)
+  Resolves: rhbz#1023829
+- network GUI: don't crash when wifi is activated in standalone spoke
+  (rvykydal)
+  Resolves: rhbz#1046138
+- network GUI: ignore fcoe vlan devices (rvykydal)
+  Resolves: rhbz#1051268
+
+* Fri Jan 10 2014 Brian C. Lane <bcl@redhat.com> - 19.31.43-1
+- Fix the release notes image cycler. (dshea)
+  Resolves: rhbz#1049967
+- Error gracefully if we have a question in cmdline mode. (sbueno+anaconda)
+  Resolves: rhbz#869731
+- Verify that designated label can be set (#1038590) (amulhern)
+  Related: rhbz#1038590
+- Do not change sensitivity of label field (#1038590) (amulhern)
+  Related: rhbz#1038590
+- Also update POTFILES.in for the new category name (clumens).
+  Resolves: rhbz#1050053
+- Rename network spoke header (mkolman).
+  Resolves: rhbz#1050053
+- Rename the network config spoke a little bit (clumens).
+  Resolves: rhbz#1050053
+- Consolidate storage and networking under one category (clumens).
+  Resolves: rhbz#1050053
+- Fix bool parsing of boot options with inst. prefix (mkolman)
+  Resolves: rhbz#1044391
+- Treat the output of vncpasswd as binary data, since it is (dshea)
+  Resolves: rhbz#1045162
+- Add iutil.exec* options for handling binary data (dshea)
+  Related: rhbz#1045162
+- Do not allow 'root' as a user name (vpodzime)
+  Resolves: rhbz#1032671
+- Add Shell spoke to s390x installations (vpodzime)
+  Resolves: rhbz#1019248
+- Put TUI spokes in common categories (vpodzime)
+  Related: rhbz#1019248
+
+* Tue Jan 07 2014 Brian C. Lane <bcl@redhat.com> - 19.31.42-1
+- Display additional disk attributes in TUI storage spoke. (sbueno+anaconda)
+  Resolves: rhbz#1024760
+- network GUI: fix typo making device adding fail silently (rvykydal)
+  Resolves: rhbz#1047799
+- network GUI: fix porting thinko in log msg causing traceback on Configure
+  (rvykydal)
+  Resolves: rhbz#1047941
+- Only display the actions summary dialog if there are any actions (clumens).
+  Resolves: rhbz#1030511
+
+* Fri Dec 20 2013 Brian C. Lane <bcl@redhat.com> - 19.31.41-1
+- Check for ready before baseRepo in completed (bcl)
+  Resolves: rhbz#1044985
+- Print a message and exit if a user attempts to upgrade via kickstart. (dshea)
+  Resolves: rhbz#1036756
+- Don't show the language twice for keyboard layouts (dshea)
+  Resolves: rhbz#1021849
+- If there are incomplete spokes, let the user know which (clumens).
+  Resolves: rhbz#1032801
+- network: GUI, don't ask for wifi secrets upon Configure (rvykydal)
+  Resolves: rhbz#1033073
+- network: GUI, add support for virtual devices removing (rvykydal)
+  Resolves: rhbz#1030870
+- network: fix naming of slave ifcfg files from kickstart (rvykydal)
+  Related: rhbz#1036047
+  Resolves: rhbz#1036047
+- network: GUI, handle virtual devices (bond, vlan, team) properly (rvykydal)
+  Resolves: rhbz#1036047
+- network: call GDBus proxy methods like python (rvykydal)
+  Related: rhbz#1036047
+  Resolves: rhbz#1036047
+- network: add team support for kickstart %%pre phase (rvykydal)
+  Resolves: rhbz#1003591
+- network: generate kickstart commands for team devices (rvykydal)
+  Resolves: rhbz#1003591
+- network: support for adding team devices (rvykydal)
+  Resolves: rhbz#1003591
+- network: display team devices in status (rvykydal)
+  Resolves: rhbz#1003591
+- network: add team support to kickstart (rvykydal)
+  Resolves: rhbz#1003591
+- Accept only .iso files from the IsoChooser dialog (vpodzime)
+  Resolves: rhbz#1015169
+- Fix a typo (rvykydal)
+  Related: rhbz#1039223
+  Resolves: rhbz#1039223
+
+* Tue Dec 17 2013 Brian C. Lane <bcl@redhat.com> - 19.31.40-1
+- Add initial 64-bit ARM aarch64 EFI support (dmarlin)
+  Resolves: rhbz#1034428
+- Don't wait for systemctl shutdown command to exit (bcl)
+  Resolves: rhbz#994188
+- Fix default device for ks=cdrom (bcl)
+  Resolves: rhbz#1042500
+- Fix geolocation on live installs (mkolman)
+  Resolves: rhbz#1032735
+- Use ExceptionInfo namedtuple when dumping anaconda (vpodzime)
+  Resolves: rhbz#983787
+- Catch OSError if there are problems running authconfig. (sbueno+anaconda)
+  Resolves: rhbz#994674
+- Move atexit registration before running rescue mode (vpodzime)
+  Resolves: rhbz#1042722
+- Set environment variables in anaconda systemd shell file (amulhern)
+  Resolves: rhbz#1023913
+- Don't allow bootloader and /boot on iSCSI on s390 (vpodzime)
+  Resolves: rhbz#1034222
+- Remove enablement of whiteout/blackout plugins and adapt requires (notting)
+  Resolves: rhbz#1040530
+
+* Mon Dec 16 2013 Brian C. Lane <bcl@redhat.com> - 19.31.39-1
+- use deepcopy on ksdata method (bcl)
+  Resolves: rhbz#1024509
+- Update source on errors (bcl)
+  Resolves: rhbz#1030997
+- clear errors when metadata is ok in tui source spoke (bcl)
+  Resolves: rhbz#1034420
+- Generate missing machine-id (bcl)
+  Resolves: rhbz#1034916
+- fcoe gui: repopulate device tree only if device was actually added (rvykydal)
+  Related: rhbz#1039223
+  Resolves: rhbz#1039223
+- Exclude FCoE disks from local disks (rvykydal)
+  Related: rhbz#1039223
+  Resolves: rhbz#1039223
+- fcoe: repopulate devicetree after adding FCoE SAN (rvykydal)
+  Resolves: rhbz#1039223
+- createUser is already in a chroot (bcl)
+  Resolves: rhbz#1038241
+- Hide password characters in iSCSI login fields (vpodzime)
+  Resolves: rhbz#1034202
+- Do not try to setup None NFS repository (vpodzime)
+  Resolves: rhbz#1028699
+
+* Wed Dec 11 2013 Brian C. Lane <bcl@redhat.com> - 19.31.38-1
+- Make _yum.preconf setup atomic (bcl)
+  Resolves: rhbz#882279
+- refactor into _setupInstallDevice (bcl)
+  Related: rhbz#882279
+  Resolves: rhbz#882279
+- Pass biosdevname boot option to installed system (rvykydal)
+  Resolves: rhbz#1030943
+- network: add s390 options in ifcfgs generated from kickstart (rvykydal)
+  Resolves: rhbz#1031376
+- Don't require pressing escape twice to kill the media check window (clumens)
+  Resolves: rhbz#1015173
+- Change source spoke proxy handling to use local copy (bcl)
+  Resolves: rhbz#1029245
+- clear software environment (bcl)
+  Resolves: rhbz#1029536
+- Make thread manager operations atomic (mkolman)
+  Resolves: rhbz#1029898
+
+* Thu Dec 05 2013 Brian C. Lane <bcl@redhat.com> - 19.31.37-1
+- Omit /dev/sr* from list-harddrives (sbueno+anaconda)
+  Resolves: rhbz#1032500
+
 * Thu Nov 21 2013 Brian C. Lane <bcl@redhat.com> - 19.31.36-1
 - Network protocols don't list Closest mirror first (vpodzime)
   Resolves: rhbz#1028697
