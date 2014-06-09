@@ -2,7 +2,7 @@
 
 Summary: Graphical system installer
 Name:    anaconda
-Version: 19.31.77
+Version: 19.31.79
 Release: 1%{?dist}
 License: GPLv2+
 Group:   Applications/System
@@ -259,6 +259,14 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Tue Apr 29 2014 Brian C. Lane <bcl@redhat.com> - 19.31.79-1
+- network: fix device configuration in text mode (rvykydal)
+  Resolves: rhbz#1091434
+
+* Mon Apr 28 2014 Brian C. Lane <bcl@redhat.com> - 19.31.78-1
+- Fix unloading modules in driver-updates (wwoods)
+  Resolves: rhbz#1085099
+
 * Wed Apr 09 2014 Brian C. Lane <bcl@redhat.com> - 19.31.77-1
 - network: show ip of device with default route for vnc and ssh (rvykydal)
   Resolves: rhbz#1083305
