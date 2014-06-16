@@ -14,6 +14,7 @@ URL:     http://fedoraproject.org/wiki/Anaconda
 # ./autogen.sh
 # make dist
 Source0: %{name}-%{version}.tar.bz2
+Patch1: anaconda-centos-add-centos-install-class.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -187,6 +188,7 @@ runtime on NFS/HTTP/FTP servers or local disks.
 
 %prep
 %setup -q
+%patch1 -p1
 
 %build
 %configure --disable-static \
@@ -259,6 +261,9 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Mon Jun 16 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79-1.el7.centos.1
+- Add patch to inject CentOS install class, and make it default
+
 * Tue Apr 29 2014 Brian C. Lane <bcl@redhat.com> - 19.31.79-1
 - network: fix device configuration in text mode (rvykydal)
   Resolves: rhbz#1091434
