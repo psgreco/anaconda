@@ -98,7 +98,7 @@ diff -uNr anaconda-19.31.79__orig/pyanaconda/installclasses/fedora.py anaconda-1
      name = N_("_Fedora")
      sortPriority = 10000
 -    if productName.startswith("Red Hat "):
-+    if productName.startswith("Red Hat ") or productName.startswith("CentOS ":
++    if productName.startswith("Red Hat ") or productName.startswith("CentOS "):
          hidden = 1
  
      _l10n_domain = "anaconda"
