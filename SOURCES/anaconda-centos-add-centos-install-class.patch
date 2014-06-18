@@ -32,8 +32,8 @@ diff -uNr anaconda-19.31.79__orig/pyanaconda/installclasses/centos.py anaconda-1
 +    # name has underscore used for mnemonics, strip if you dont need it
 +    id = "centos"
 +    name = N_("CentOS Linux")
-+    sortPriority = 5000
-+    if not productName.startswith("CentOS "):
++    sortPriority = 25000
++    if productName.startswith("Red Hat ") or productName.startswith("Fedora "):
 +        hidden = 1
 +
 +    defaultFS = "xfs"
