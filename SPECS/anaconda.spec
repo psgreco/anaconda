@@ -3,7 +3,7 @@
 Summary: Graphical system installer
 Name:    anaconda
 Version: 19.31.79
-Release: 1%{?dist}.2
+Release: 1%{?dist}.3
 License: GPLv2+
 Group:   Applications/System
 URL:     http://fedoraproject.org/wiki/Anaconda
@@ -16,6 +16,8 @@ URL:     http://fedoraproject.org/wiki/Anaconda
 Source0: %{name}-%{version}.tar.bz2
 Patch1000: anaconda-centos-add-centos-install-class.patch
 Patch1001: anaconda-centos-set-right-eula-location.patch
+Patch1002: anaconda-centos-efidir-centos.patch
+Patch1003: anaconda-centos-bootfs-default-to-xfs.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -191,6 +193,8 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %setup -q
 %patch1000 -p1
 %patch1001 -p1
+%patch1002 -p1
+%patch1003 -p1
 
 %build
 %configure --disable-static \
@@ -263,6 +267,10 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Mon Jun 30 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79-1.el7.centos.3
+- make efidir be centos to match grub2's payload
+- make boot part fs default to xfs
+
 * Wed Jun 18 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79-1.el7.centos.2
 - make centos.py the default installclass if its not RHEL/Fedora being built
 - use the right path for the EULA string ( #7165 bstinson )
