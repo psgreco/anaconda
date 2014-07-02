@@ -18,6 +18,7 @@ Patch1000: anaconda-centos-add-centos-install-class.patch
 Patch1001: anaconda-centos-set-right-eula-location.patch
 Patch1002: anaconda-centos-efidir-centos.patch
 Patch1003: anaconda-centos-bootfs-default-to-xfs.patch
+Patch1004: anaconda-centos-disable-mirrors.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -195,6 +196,7 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %patch1001 -p1
 %patch1002 -p1
 %patch1003 -p1
+%patch1004 -p1
 
 %build
 %configure --disable-static \
@@ -267,6 +269,10 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Wed Jul  2 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79.1.el7.centos.4
+- trim unneeded whitespace from branding patch
+- skip the mirrorlist section till we can build an api at our end around it
+
 * Mon Jun 30 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79-1.el7.centos.3
 - make efidir be centos to match grub2's payload
 - make boot part fs default to xfs
