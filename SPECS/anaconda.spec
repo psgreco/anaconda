@@ -1,40 +1,37 @@
-%define livearches %{ix86} x86_64 ppc ppc64
+%define livearches %{ix86} x86_64 ppc ppc64 ppc64le
 
 Summary: Graphical system installer
 Name:    anaconda
-Version: 19.31.79
-Release: 1%{?dist}.4
+Version: 19.31.123
+Release: 1%{?dist}
 License: GPLv2+
 Group:   Applications/System
 URL:     http://fedoraproject.org/wiki/Anaconda
 
+%define anacondabuild %{name}-19.31.123
+%define helpver 7.1.4
 # To generate Source0 do:
 # git clone http://git.fedorahosted.org/git/anaconda.git
 # git checkout -b archive-branch anaconda-%%{version}-%%{release}
 # ./autogen.sh
 # make dist
 Source0: %{name}-%{version}.tar.bz2
-Patch1000: anaconda-centos-add-centos-install-class.patch
-Patch1001: anaconda-centos-set-right-eula-location.patch
-Patch1002: anaconda-centos-efidir-centos.patch
-Patch1003: anaconda-centos-bootfs-default-to-xfs.patch
-Patch1004: anaconda-centos-disable-mirrors.patch
+Source1: anaconda-user-help-%{helpver}.tar.gz
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %define gettextver 0.11
-%define gconfversion 2.28.1
 %define intltoolver 0.31.2-3
 %define libnlver 1.0
-%define pykickstartver  1.99.43.10
+%define pykickstartver  1.99.43.17
 %define yumver 3.4.3-91
 %define partedver 1.8.1
 %define pypartedver 2.5-2
 %define pythonpyblockver 0.45
-%define nmver 1:0.7.1-3.git20090414
+%define nmver 1.0.0-6.git20150107
 %define dbusver 1.2.3
 %define yumutilsver 1.1.11-3
-%define mehver 0.23-1
+%define mehver 0.25.2-1
 %define sckeyboardver 1.3.1
 %define firewalldver 0.3.5-1
 %define pythonurlgrabberver 3.9.1-5
@@ -55,9 +52,6 @@ BuildRequires: gobject-introspection-devel
 BuildRequires: glade-devel
 BuildRequires: pygobject3
 BuildRequires: intltool >= %{intltoolver}
-BuildRequires: libX11-devel
-BuildRequires: libXt-devel
-BuildRequires: libXxf86misc-devel
 BuildRequires: libgnomekbd-devel
 BuildRequires: libnl-devel >= %{libnlver}
 BuildRequires: libxklavier-devel
@@ -77,6 +71,8 @@ BuildRequires: dbus-devel >= %{dbusver}
 BuildRequires: dbus-python
 BuildRequires: rpm-devel >= %{rpmver}
 BuildRequires: libarchive-devel >= %{libarchivever}
+# required for help content generation
+BuildRequires: python-lxml
 %ifarch %livearches
 BuildRequires: desktop-file-utils
 %endif
@@ -84,9 +80,17 @@ BuildRequires: desktop-file-utils
 BuildRequires: s390utils-devel
 %endif
 
-Requires: anaconda-widgets = %{version}-%{release}
-Requires: python-blivet >= 0.18.30
-Requires: gnome-icon-theme-symbolic
+
+Requires: anaconda-core = %{version}-%{release}
+Requires: anaconda-gui = %{version}-%{release}
+Requires: anaconda-tui = %{version}-%{release}
+
+%description
+The anaconda package is a metapackage for the Anaconda installer.
+
+%package core
+Summary: Core of the Anaconda installer
+Requires: python-blivet >= 0.61.0.17-1
 Requires: python-meh >= %{mehver}
 Requires: libreport-anaconda >= 2.0.21-1
 Requires: libreport-rhel-anaconda-bugzilla >= 2.1.11-1
@@ -96,7 +100,6 @@ Requires: parted >= %{partedver}
 Requires: pyparted >= %{pypartedver}
 Requires: yum >= %{yumver}
 Requires: python-urlgrabber >= %{pythonurlgrabberver}
-Requires: system-logos
 Requires: pykickstart >= %{pykickstartver}
 Requires: langtable-data >= %{langtablever}
 Requires: langtable-python >= %{langtablever}
@@ -108,18 +111,13 @@ Requires: dbus-python
 Requires: python-pwquality
 Requires: python-IPy
 Requires: python-nss
-Requires: tigervnc-server-minimal
 Requires: pytz
-Requires: libxklavier
-Requires: libgnomekbd
 Requires: realmd
 Requires: teamd
 Requires: keybinder3
 %ifarch %livearches
 Requires: usermode
-Requires: zenity
 %endif
-Requires: GConf2 >= %{gconfversion}
 %ifarch s390 s390x
 Requires: openssh
 %endif
@@ -127,7 +125,7 @@ Requires: isomd5sum >= %{isomd5sum}
 Requires: yum-utils >= %{yumutilsver}
 Requires: createrepo
 Requires: NetworkManager >= %{nmver}
-Requires: nm-connection-editor
+Requires: NetworkManager-team
 Requires: dhclient
 Requires: kbd
 Requires: chrony
@@ -139,12 +137,15 @@ Requires: systemd
 Requires: fcoe-utils >= %{fcoeutilsver}
 %endif
 Requires: iscsi-initiator-utils >= %{iscsiver}
-%ifarch %{ix86} x86_64 ia64
+%ifarch %{ix86} x86_64 ia64 aarch64
 Requires: dmidecode
 %if ! 0%{?rhel}
 Requires: hfsplus-tools
 %endif
 %endif
+
+# required because of the rescue mode and VNC question
+Requires: anaconda-tui = %{version}-%{release}
 
 Requires: python-coverage
 
@@ -154,9 +155,39 @@ Obsoletes: anaconda-runtime < %{version}-%{release}
 Provides: anaconda-runtime = %{version}-%{release}
 Obsoletes: booty <= 0.107-1
 
-%description
-The anaconda package contains the program which was used to install your
+%description core
+The anaconda-core package contains the program which was used to install your
 system.
+
+%package gui
+Summary: Graphical user interface for the Anaconda installer
+Requires: anaconda-core = %{version}-%{release}
+Requires: anaconda-widgets = %{version}-%{release}
+Requires: anaconda-user-help = %{version}-%{release}
+Requires: python-meh-gui >= %{mehver}
+Requires: gnome-icon-theme-symbolic
+Requires: system-logos
+Requires: tigervnc-server-minimal
+Requires: libxklavier
+Requires: libgnomekbd
+Requires: nm-connection-editor
+%ifarch %livearches
+Requires: zenity
+%endif
+Requires: yelp
+%ifnarch s390 s390x
+Requires: NetworkManager-wifi
+%endif
+
+%description gui
+This package contains graphical user interface for the Anaconda installer.
+
+%package tui
+Summary: Textual user interface for the Anaconda installer
+Requires: anaconda-core = %{version}-%{release}
+
+%description tui
+This package contains textual user interface for the Anaconda installer.
 
 %package widgets
 Summary: A set of custom GTK+ widgets for use with anaconda
@@ -190,13 +221,15 @@ The 'anaconda' dracut module handles installer-specific boot tasks and
 options. This includes driver disks, kickstarts, and finding the anaconda
 runtime on NFS/HTTP/FTP servers or local disks.
 
+%package user-help
+Summary: Content for the Anaconda built-in help system
+
+%description user-help
+This package hold the content for the Anaconda built-in help system.
+
 %prep
 %setup -q
-%patch1000 -p1
-%patch1001 -p1
-%patch1002 -p1
-%patch1003 -p1
-%patch1004 -p1
+%setup -a 1
 
 %build
 %configure --disable-static \
@@ -204,15 +237,22 @@ runtime on NFS/HTTP/FTP servers or local disks.
            --enable-gtk-doc
 %{__make} %{?_smp_mflags}
 
+# generate content for the help system
+( cd anaconda-user-help-%{helpver} && python prepare_anaconda_help_content.py %{helpver})
+
 %install
 %{make_install}
 find %{buildroot} -type f -name "*.la" | xargs %{__rm}
 
+# install the help content
+mkdir -p %{buildroot}%{_datadir}/anaconda/help
+cp -r %{_builddir}/%{anacondabuild}/anaconda-user-help-%{helpver}/anaconda_help_content/* %{buildroot}%{_datadir}/anaconda/help
+
 %ifarch %livearches
 desktop-file-install ---dir=%{buildroot}%{_datadir}/applications %{buildroot}%{_datadir}/applications/liveinst.desktop
-%else
-%{__rm} -rf %{buildroot}%{_bindir}/liveinst %{buildroot}%{_sbindir}/liveinst
 %endif
+# NOTE: If you see "error: Installed (but unpackaged) file(s) found" that include liveinst files,
+#       check the IS_LIVEINST_ARCH in configure.ac to make sure your architecture is properly defined
 
 %find_lang %{name}
 
@@ -227,18 +267,25 @@ update-desktop-database &> /dev/null || :
 update-desktop-database &> /dev/null || :
 %endif
 
-%files -f %{name}.lang
+%files
 %doc COPYING
+
+%files core -f %{name}.lang
 %{_unitdir}/*
 %{_prefix}/lib/systemd/system-generators/*
 %{_bindir}/instperf
+%{_bindir}/anaconda-disable-nm-ibft-plugin
 %{_sbindir}/anaconda
 %{_sbindir}/handle-sshpw
-%{_sbindir}/logpicker
 %{_datadir}/anaconda
+%exclude %{_datadir}/anaconda/help/*
+%exclude %{_datadir}/anaconda/tzmapdata
 %{_prefix}/libexec/anaconda
 %{_libdir}/python*/site-packages/pyanaconda/*
-%{_libdir}/python*/site-packages/log_picker/*
+%exclude %{_libdir}/python*/site-packages/pyanaconda/rescue.py
+%exclude %{_libdir}/python*/site-packages/pyanaconda/text.py
+%exclude %{_libdir}/python*/site-packages/pyanaconda/ui/gui/*
+%exclude %{_libdir}/python*/site-packages/pyanaconda/ui/tui/*
 %{_bindir}/analog
 %{_bindir}/anaconda-cleanup
 %ifarch %livearches
@@ -250,6 +297,14 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/applications/*.desktop
 %{_datadir}/icons/hicolor/*
 %endif
+
+%files gui
+%{_libdir}/python*/site-packages/pyanaconda/ui/gui/*
+
+%files tui
+%{_libdir}/python*/site-packages/pyanaconda/rescue.py
+%{_libdir}/python*/site-packages/pyanaconda/text.py
+%{_libdir}/python*/site-packages/pyanaconda/ui/tui/*
 
 %files widgets
 %{_libdir}/libAnacondaWidgets.so.*
@@ -268,22 +323,854 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/lib/dracut/modules.d/80%{name}/*
 %{_prefix}/libexec/anaconda/dd_*
 
+%files user-help
+%{_datadir}/anaconda/help/*
+
 %changelog
-* Wed Jul  2 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79.1.el7.centos.4
-- trim unneeded whitespace from branding patch
-- skip the mirrorlist section till we can build an api at our end around it
+* Mon Feb 16 2015 Brian C. Lane <bcl@redhat.com> - 19.31.123-1
+- iscsi: pass rd.* options of devices to be mouted in dracut (rvykydal)
+  Resolves: rhbz#1192398
 
-* Mon Jun 30 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79-1.el7.centos.3
-- make efidir be centos to match grub2's payload
-- make boot part fs default to xfs
+* Mon Jan 26 2015 Brian C. Lane <bcl@redhat.com> - 19.31.122-1
+- Show empty VGs in the custom spoke. (dlehman)
+  Resolves: rhbz#1185832
+- network: add teamd package if team is used during installation (rvykydal)
+  Resolves: rhbz#1185670
 
-* Wed Jun 18 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79-1.el7.centos.2
-- make centos.py the default installclass if its not RHEL/Fedora being built
-- use the right path for the EULA string ( #7165 bstinson )
-- use patch numbers greater than 1000, just in case
+* Tue Jan 20 2015 Brian C. Lane <bcl@redhat.com> - 19.31.121-1
+- network: adapt to NetworkManager package split-up (rvykydal)
+  Resolves: rhbz#1182633
+- network: pass team opts to dracut for netroot (rvykydal)
+  Resolves: rhbz#1075666
 
-* Mon Jun 16 2014 Karanbir Singh <kbsingh@centos.org> - 19.31.79-1.el7.centos.1
-- Add patch to inject CentOS install class, and make it default
+* Fri Jan 16 2015 Brian C. Lane <bcl@redhat.com> - 19.31.120-1
+- Add support for architecture suffixes in help files (mkolman)
+  Related: rhbz#1072033
+
+* Wed Jan 14 2015 Brian C. Lane <bcl@redhat.com> - 19.31.119-1
+- Update error handler classes (bcl)
+  Resolves: rhbz#1181146
+- Pass a Size instance to blivet instead of number of bytes (vpodzime)
+  Related: rhbz#1171116
+- If using pre-existing, no size needs to be specified in ksdata (amulhern)
+  Resolves: rhbz#1169783
+
+* Wed Jan 07 2015 Brian C. Lane <bcl@redhat.com> - 19.31.118-1
+- Fix handling of md fwraid names in kickstart bootloader command. (dlehman)
+  Resolves: rhbz#1167375
+- Do not bypass name setters in the custom spoke. (dlehman)
+  Related: rhbz#1138370
+- Don't try to use math.ceil on blivet.size.Size instances. (dlehman)
+  Resolves: rhbz#1164191
+- Preserve kickstart url behavior for mirrorlist (bcl)
+  Related: rhbz#1109933
+- Use a backslash to escape nfs spaces instead of x20 (bcl)
+  Related: rhbz#1109933
+- Allow adding prepboot to a blank disk in custom (bcl)
+  Resolves: rhbz#1176829
+
+* Thu Dec 18 2014 Brian C. Lane <bcl@redhat.com> - 19.31.117-1
+- Don't install langpacks.conf if nowhere to install to (dshea)
+  Resolves: rhbz#1172004
+
+* Mon Dec 15 2014 Brian C. Lane <bcl@redhat.com> - 19.31.116-1
+- Fix the way we create the list of DASDs needing dasdfmt. (sbueno+anaconda)
+  Related: rhbz#1073982
+- Fix threading issues for dasdfmt in gui storage. (sbueno+anaconda)
+  Resolves: rhbz#1073982
+- Make sure /boot is not LVM LV if we're on s390x (sbueno+anaconda)
+  Resolves: rhbz#873135
+
+* Tue Dec 09 2014 Brian C. Lane <bcl@redhat.com> - 19.31.115-1
+- Fix EOF error that occurs if user input required in x3270. (jstodola)
+  Resolves: rhbz#1171135
+- Remove magic from the passphrase dialog (vpodzime)
+  Resolves: rhbz#1168645
+- Close file descriptors when forking child processes (vpodzime)
+  Related: rhbz#1083978
+- Close file descriptors when running ntpdate (vpodzime)
+  Resolves: rhbz#1083978
+
+* Fri Dec 05 2014 Brian C. Lane <bcl@redhat.com> - 19.31.114-1
+- Pass the help content version to the script that generates it (mkolman)
+  Related: rhbz#1072033
+- Use Anaconda version for the help subpackage (mkolman)
+  Related: rhbz#1072033
+
+* Thu Dec 04 2014 Brian C. Lane <bcl@redhat.com> - 19.31.113-1
+- Make sure help content files are not part of the core sub-package (mkolman)
+  Related: rhbz#1072033
+- iscsi: when logging into nodes consider ip:port of node (rvykydal)
+  Resolves: rhbz#1114820
+
+* Mon Dec 01 2014 Brian C. Lane <bcl@redhat.com> - 19.31.112-1
+- Update the nav_box internal child for datetime_spoke. (dshea)
+  Resolves: rhbz#1155548
+- Remove the spacing properties from GtkLevelBar (dshea)
+  Resolves: rhbz#1155548
+- Put the cityCompletion back on the list of widgets (vpodzime)
+  Resolves: rhbz#1155548
+- Remove the "other" tab in the network spoke. (dshea)
+  Resolves: rhbz#1155548
+- Add help content subpackage (mkolman)
+  Related: rhbz#1072033
+
+* Tue Nov 25 2014 Brian C. Lane <bcl@redhat.com> - 19.31.111-1
+- Fix pylint errors in the last addons.py commit. (clumens)
+  Related: rhbz#1155955
+- Provide useful hints on TTY1 during the installation
+  Resolves: rhbz#1166834
+
+* Mon Nov 24 2014 Brian C. Lane <bcl@redhat.com> - 19.31.110-1
+- Fix PWQError issues. (sbueno+anaconda)
+  Resolves: rhbz#1066988
+- Just preserve the %%addon header args if an addon is missing (vpodzime)
+  Resolves: rhbz#1155955
+
+* Fri Nov 21 2014 Brian C. Lane <bcl@redhat.com> - 19.31.109-1
+- Skip tui askvnc reboot for dirinstall (bcl)
+  Resolves: rhbz#1164254
+- Fix the ISO chooser dialog (dshea)
+  Resolves: rhbz#1163026
+
+* Wed Nov 19 2014 Brian C. Lane <bcl@redhat.com> - 19.31.108-1
+- Fix a bad cherry-pick in an error handler (dshea)
+  Related: rhbz#1057032
+- Add support for custom gid to advanced user setup (bcl)
+  Resolves: rhbz#1163803
+- Create missing parent directories for user's home directory (bcl)
+  Resolves: rhbz#1163775
+
+* Thu Nov 13 2014 Brian C. Lane <bcl@redhat.com> - 19.31.107-1
+- Convert LVM_PE_SIZE to KiB (vpodzime)
+  Resolves: rhbz#1163081
+- Check if we read something when emptying stdin queue (vpodzime)
+  Related: rhbz#1162702
+- Require min entropy for 'part --encrypted' devices (vpodzime)
+  Resolves: rhbz#1162695
+- Don't rely on terminal attributes being configurable (vpodzime)
+  Resolves: rhbz#1162702
+- network: fix a typo making creating virtual devices in %%pre fail (rvykydal)
+  Related: rhbz#1075195
+- Don't traceback if connection does not have read-only setting (rvykydal)
+  Resolves: rhbz#1158919
+- Get rid of unused _dasd variable in custom spoke. (sbueno+anaconda)
+  Related: rhbz#1158590
+
+* Thu Nov 06 2014 Brian C. Lane <bcl@redhat.com> - 19.31.106-1
+- Prevent tb on s390x when de-selecting a DASD and doing custom part.
+  (sbueno+anaconda)
+  Resolves: rhbz#1158590
+- Add the entropy dialog to POTFILES.in. (clumens)
+  Related: rhbz#1073679
+- Unpack the callback data given to us by blivet (vpodzime)
+  Related: rhbz#1073679
+- Add timeout to callbacks waiting for enough entropy (vpodzime)
+  Resolves: rhbz#1073679
+
+* Fri Oct 31 2014 Brian C. Lane <bcl@redhat.com> - 19.31.105-1
+- custom: Clearing errors should also clear Done clicked state (bcl)
+  Resolves: rhbz#1158609
+- Set the autopart fstype for boot too (bcl)
+  Resolves: rhbz#1112697
+- Lightly rearrange the nav_area (dshea)
+  Resolves: rhbz#1158969
+
+* Wed Oct 22 2014 Brian C. Lane <bcl@redhat.com> - 19.31.104-1
+- Remove an extlinux-related block from rpmostreepayload.py. (clumens)
+  Related: rhbz#1153409
+- bootloader: Bridge efi_dir configuration earlier for rpmostreepayload
+  (walters)
+  Related: rhbz#1153409
+- rpmostreepayload: Handle grub2+EFI layout (walters)
+  Related: rhbz#1153409
+- rpmostreepayload: Copy all subdirectories of /usr/lib/ostree-boot (walters)
+  Related: rhbz#1153409
+- Handle the case of rpmostreepayload + GRUB2 (walters)
+  Related: rhbz#1153409
+- Enable dmidecode on aarch64 (jdisnard). (clumens)
+  Resolves: rhbz#1134651
+
+* Mon Oct 20 2014 Brian C. Lane <bcl@redhat.com> - 19.31.103-1
+- Really fix issue with starting in cmdline mode on s390x. (sbueno+anaconda)
+  Resolves: rhbz#1040933
+- Add authconfig and firewalld packages when used in ks (bcl)
+  Resolves: rhbz#1147687
+- Fix the rest of the new pylint error messages. (clumens)
+  Related: rhbz#1121678
+- Change disable-msg to disable for the new pylint. (clumens)
+  Related: rhbz#1121678
+- Don't panic prematurely on a missing size (amulhern)
+  Resolves: rhbz#1154068
+- Get rid of some unnecessary text from dasdfmt dialog. (sbueno+anaconda)
+  Resolves: rhbz#1153050
+- rpmostreepayload: Drop selinux-ensure-labeled call (walters)
+  Related: rhbz#1113535
+
+* Thu Oct 16 2014 Brian C. Lane <bcl@redhat.com> - 19.31.102-1
+- Fix a spelling error (dshea)
+  Related: rhbz#1072619
+
+* Tue Oct 14 2014 Brian C. Lane <bcl@redhat.com> - 19.31.101-1
+- Update pykickstart ver to bring in fix for bug (amulhern)
+  Related: rhbz#1149718
+- Fix a typo from 73d3a8e5. (sbueno+anaconda)
+  Resolves: rhbz#1040933
+- Fix a bug unmounting /boot on efi+atomic installs. (clumens)
+  Resolves: rhbz#1150588
+- Fix issues with the date&time not being updated on timezone changes
+  (vpodzime)
+  Resolves: rhbz#1151479
+
+* Fri Oct 10 2014 Brian C. Lane <bcl@redhat.com> - 19.31.100-1
+- Get rid of an unused variable in the localization test. (clumens)
+  Related: rhbz#1044233
+- Import GUI-specific stuff only when running GUI in entropy handling
+  (vpodzime)
+  Related: rhbz#1073679
+- Always store the information about display mode in ksdata (vpodzime)
+  Related: rhbz#1073679
+- Make the date format locale-dependent in our GUI (vpodzime)
+  Resolves: rhbz#1044233
+- A function for resolving date format and order (vpodzime)
+  Related: rhbz#1044233
+- Switch to using the new help content path (mkolman)
+  Related: rhbz#1072033
+- Clear out custom storage ksdata after first attempt to apply it. (dlehman)
+  Resolves: rhbz#1144604
+- Take "RHEL Atomic Host" as rhel installclass (rvykydal)
+  Resolves: rhbz#1150410
+
+* Tue Oct 07 2014 Brian C. Lane <bcl@redhat.com> - 19.31.99-1
+- Use the /usr/share/anaconda/help for help content (mkolman)
+  Related: rhbz#1072033
+- Fix the value written to /etc/sysconfig/desktop (dshea)
+  Related: rhbz#1121678
+- s390x: show dialog if kernel cmdline in zipl.conf is too long.
+  (sbueno+anaconda)
+  Resolves: rhbz#885011
+- Ignore the "No value passed for parameter self" warning. (clumens)
+  Related: rhbz#1131382
+- Move help docs outside of livearch block in spec file (bcl)
+  Related: rhbz#1072033
+
+* Fri Oct 03 2014 Brian C. Lane <bcl@redhat.com> - 19.31.98-1
+- Really exit when "Exit installer" in the error dialog is clicked (vpodzime)
+  Related: rhbz#1131382
+- Graphically handle errors arising from ostree repo pull problems. (clumens)
+  Resolves: rhbz#1131382
+- Fix log message formating introduced by autostep support (mkolman)
+  Related: rhbz#1059295
+- Fix autotools rules to properly include help placeholders (mkolman)
+  Related: rhbz#1072033
+
+* Thu Oct 02 2014 Brian C. Lane <bcl@redhat.com> - 19.31.97-1
+- Remove a reference to the depreciated copy-screenshots script (mkolman)
+  Related: rhbz#1059295
+- Clear errors when downloading new MD in text (bcl)
+  Related: rhbz#1125927
+- Return result of default key handling in text summary hub (bcl)
+  Related: rhbz#997405
+- Bump up the required version of pykickstart (vpodzime)
+  Related: rhbz#869456
+- Add support for thin pool profile specification in kickstart (vpodzime)
+  Resolves: rhbz#869456
+- Add support for autostep and --autoscreenshot (mkolman)
+  Resolves: rhbz#1059295
+- Don't crash if escrow certificate is requested without network access
+  (mkolman)
+  Resolves: rhbz#1085265
+
+* Tue Sep 30 2014 Brian C. Lane <bcl@redhat.com> - 19.31.96-1
+- network: support for bridge, require pykickstart with the support (rvykydal)
+  Related: rhbz#1075195
+- Specify help file names for hubs and spokes (mkolman)
+  Related: rhbz#1072033
+- Add a help button to every Anaconda screen (mkolman)
+  Resolves: rhbz#1072033
+- Show environment specified in kickstart as selected in the GUI (mkolman)
+  Resolves: rhbz#1087831
+- Fix Welcome spoke not showing up during kickstart installation (mkolman)
+  Resolves: rhbz#1147943
+- network: display only actual fqdn of ip we offer for vnc connection
+  (rvykydal)
+  Resolves: rhbz#1089429
+
+* Mon Sep 29 2014 Brian C. Lane <bcl@redhat.com> - 19.31.95-1
+- Bump blivet version Requires so default s390x boot change is picked up
+  (sbueno+anaconda)
+  Related: rhbz#1035201
+- Don't allow /boot on lvm on s390x. (sbueno+anaconda)
+  Resolves: rhbz#1035201
+- Handle failures to instantiate storage devices when parsing kickstart.
+  (dlehman)
+  Related: rhbz#1072285
+- Fix pylint problem for #1066988. (sbueno+anaconda)
+  Related: rhbz#1066988
+- Protect protected devices in custom spoke (bcl)
+  Resolves: rhbz#1052883
+- network: Catch exception from NM failing to create a bridge device (rvykydal)
+  Related: rhbz#1075195
+- network: add bridge support for kickstart %%pre phase (rvykydal)
+  Resolves: rhbz#1075195
+- network: generate kickstart commands for bridge devices (rvykydal)
+  Resolves: rhbz#1075195
+- network: add bridge support to kickstart (rvykydal)
+  Resolves: rhbz#1075195
+- network: support for adding bridge devices (rvykydal)
+  Resolves: rhbz#1075195
+- network: display bridge devices in status (rvykydal)
+  Resolves: rhbz#1075195
+- Fix PWQError issue when checking TUI passwords. (sbueno+anaconda)
+  Related: rhbz#1066988
+- parent is unused, so mark it as such. (clumens)
+  Related: rhbz#804511
+- Add the new langsupport.py TUI spoke to POTFILES.in. (clumens)
+  Related: rhbz#1000326
+- network: GUI: reactivate connection automatically after configuration
+  (rvykydal)
+  Resolves: rhbz#1033063
+- Remove the now-unused imports of storageInitialize. (clumens)
+  Related: rhbz#1074010
+- Ignore two accelerator collisions on the filter screen. (clumens)
+  Related: rhbz#1065716
+- network: enable NM ibft plugin only for ip=ibft boot option (rvykydal)
+  Resolves: rhbz#804511
+- network: add support for vlan tag in iBFT (rvykydal)
+  Resolves: rhbz#804511
+- Add support for language selection in text mode. (sbueno+anaconda)
+  Resolves: rhbz#1000326
+
+* Fri Sep 26 2014 Brian C. Lane <bcl@redhat.com> - 19.31.94-1
+- yumpayload: handle new NFS install source with inst.stage2=nfs:... (wwoods)
+  Resolves: rhbz#1001638
+- Allow cdrom-swapping when doing "inst.ks=cdrom[:...]" (wwoods)
+  Resolves: rhbz#1122104
+- anaconda-lib.sh: add tell_user() and dev_is_cdrom() (wwoods)
+  Related: rhbz#1122104
+- anaconda-lib.sh: add tell_user() and dev_is_cdrom() (wwoods)
+- Use shim on uefi now. (pjones)
+  Related: rhbz#1100048
+- Enable MAKEDEBUG in /etc/sysconfig/kernel . (pjones)
+  Related: rhbz#957681
+- Don't force a user to return to the storage spoke after dasdfmt
+  (sbueno+anaconda)
+  Related: rhbz#1074010
+- Don't run storageInitialize after dasdfmt (sbueno+anaconda)
+  Resolves: rhbz#1074010
+- If the network is disabled, also disable the network part of the source
+  spoke. (clumens)
+  Resolves: rhbz#1072453
+- Fix position of Refresh List button in filter spoke (rvykydal)
+  Related: rhbz#1065716
+- network: handle dbus UnknownMethod exception on invalid objects (rvykydal)
+  Resolves: rhbz#1061796
+- Avoid the possibility of size variables being unset (dshea)
+  Related: rhbz#1116435
+
+* Thu Sep 25 2014 Brian C. Lane <bcl@redhat.com> - 19.31.93-1
+- s390x: Apply disk selection before dasdfmt to preserve data.
+  (sbueno+anaconda)
+  Resolves: rhbz#1078892
+- Fix an error in recent commit 4518009. (dlehman)
+  Related: rhbz#1027224
+- Adapt to corrected interpetation of logvol --percent. (dlehman)
+  Resolves: rhbz#1116435
+- Fix accelerator collision of Refresh button (rvykydal)
+  Related: rhbz#1065716
+- Handle cancellation of new container creation. (dlehman)
+  Resolves: rhbz#1027224
+- Don't attempt terminal size detection on the s390 (mkolman)
+  Resolves: rhbz#1145065
+- Don't show the Add DASD button unless on s390x. (sbueno+anaconda)
+  Related: rhbz#1070115
+- Don't show the Add DASD button unless on s390x. (sbueno+anaconda)
+  Related: rhbz#1070115
+- Preserve network args on s390x. (sbueno+anaconda)
+  Resolves: rhbz#1087502
+- Don't set GRUB_DISTRIBUTOR here. (pjones)
+  Related: rhbz#996794
+
+* Fri Sep 19 2014 Brian C. Lane <bcl@redhat.com> - 19.31.92-1
+- Ignore one accelerator conflict on the new custom part RHS. (clumens)
+  Related: rhbz#1094856
+- The new Device(s) label has no mnemonic, so remove use_underline. (clumens)
+  Related: rhbz#1094856
+- Really fix string formatting of zFCP devices (sbueno+anaconda)
+  Related: rhbz#1024902
+- Don't call storage.write for dirinstall (bcl)
+  Related: rhbz#1120206
+- Convert devices size to str for GUI for zFCP devices (amulhern)
+  Resolves: rhbz#1144464
+- Fix string formatting of zFCP devices (sbueno+anaconda)
+  Related: rhbz#1024902
+- Fix the POTFILES.in list (vpodzime)
+  Related: rhbz#1073679
+- Make the Find button not jump out of the visible area (vpodzime)
+  Resolves: rhbz#1074183
+- Require minimum random data entropy when creating LUKS (vpodzime)
+  Resolves: rhbz#1073679
+- Give blivet callbacks for reporting partitioning progress (vpodzime)
+  Related: rhbz#1073679
+- Change how we test if the GUI is available in the anaconda script. (clumens)
+  Related: rhbz#1078868
+- Revert "Don't call BusyCursor before Gdk is setup (vpodzime)"
+  Related: rhbz#1078868
+- Reorganize the right side of the Custom spoke (vpodzime)
+  Resolves: rhbz#1094856
+- Fix the way zFCP devices are displayed in storage spoke. (sbueno+anaconda)
+  Resolves: rhbz#1024902
+- Set flags.rescue_mode not anaconda.rescue (amulhern)
+  Related: rhbz#1090009
+  Resolves: rhbz#1143056
+- Split localed's converted layouts and variants (vpodzime)
+  Resolves: rhbz#1073825
+- Create free space snapshot before doing custom->autopart (vpodzime)
+  Related: rhbz#1132436
+- Deprecate RUNKS cmdline option. (sbueno+anaconda)
+  Resolves: rhbz#1040933
+
+* Wed Sep 17 2014 Brian C. Lane <bcl@redhat.com> - 19.31.91-1
+- Don't call BusyCursor before Gdk is setup (bcl)
+  Resolves: rhbz#1078868
+- Fix SELINUX_DEFAULT import (bcl)
+  Resolves: rhbz#1137049
+- Actually show an error message for bad passwords in TUI. (sbueno+anaconda)
+  Resolves: rhbz#1066988
+- Catch and rethrow BTRFSValueError as KickstartException (amulhern)
+  Related: rhbz#1019685
+- Bump version so BTRFSValueError is found (amulhern)
+  Related: rhbz#1019685
+- Re-order the tz's in text mode to mirror the graphical order.
+  (sbueno+anaconda)
+  Resolves: rhbz#1032560
+- Apply a better check for whether to fail if authconfig is missing. (clumens)
+  Resolves: rhbz#1140640
+- driver-updates: fix backspace/delete in dd menus (wwoods)
+  Resolves: rhbz#1080380
+- Fix an issue with bad NFS info specified in source spoke. (sbueno+anaconda)
+  Resolves: rhbz#1097432
+- gui: add Refresh button to network storage UI (rvykydal)
+  Resolves: rhbz#1065716
+- Use timing decorator for more actions (vpodzime)
+  Related: rhbz#1065716
+- Make the LUKS unlock callback a timed action (vpodzime)
+  Related: rhbz#1065716
+- A nice decorator making Anaconda's GUI more responsive (vpodzime)
+  Related: rhbz#1065716
+- network: fix typo 'Private ksy pasword' (rvykydal)
+  Related: rhbz#1120374
+- Anaconda requires new python-meh split into multiple packages (vpodzime)
+  Related: rhbz#1012509
+
+* Mon Sep 15 2014 Brian C. Lane <bcl@redhat.com> - 19.31.90-1
+- Fix TUI error message regarding user name creation (sbueno+anaconda)
+  Resolves: rhbz#1058637
+- Warn if software selection size exceeds available space (sbueno+anaconda)
+  Resolves: rhbz#1010070
+- Fix up a string style issue found in the last network commits. (clumens)
+  Related: rhbz#1120374
+- network: WPA Enterprise: don't ask twice for password (rvykydal)
+  Related: rhbz#1120374
+- network: add support for WPA Enterprise (rvykydal)
+  Resolves: rhbz#1120374
+- Handle spaces in inst.repo, kickstart nfs, and url commands (bcl)
+  Resolves: rhbz#1109933
+- Fix q for quit issue in text mode (sbueno+anaconda)
+  Resolves: rhbz#997405
+- Additional message if kickstart was used but did not finish (amulhern)
+  Related: rhbz#1117908
+- Move some statically detectable kickstart errors out of anaconda (amulhern)
+  Related: rhbz#1117908
+- Exclude hfsplus-tools from rhel (bcl)
+  Resolves: rhbz#1119305
+- Allow to search specialized and network devices after pressing Enter
+  (mkolman)
+  Resolves: rhbz#1058364
+- Fix hang at reboot with VNC installs (wwoods)
+  Resolves: rhbz#1036572
+- Define the gettext method earlier (dshea)
+  Resolves: rhbz#1140605
+- mountExistingSystem raises an exception with dirty FS (vpodzime)
+  Resolves: rhbz#1080210
+- Don't care about crash args in bootloader (vpodzime)
+  Resolves: rhbz#1116338
+- Split out anaconda's user interfaces into separate packages (vpodzime)
+  Resolves: rhbz#1012509
+  Related: rhbz#999464
+
+* Wed Sep 10 2014 Brian C. Lane <bcl@redhat.com> - 19.31.89-1
+- Fix noselinux cmdline default (bcl)
+  Resolves: rhbz#1137049
+- Snapshot free space after clearpart for swap suggestion (vpodzime)
+  Resolves: rhbz#1132436
+- tui: show software and source spoke iff payload is PackagePayload (rvykydal)
+  Resolves: rhbz#1139142
+- filesystem -> file system in a few more places. (clumens)
+  Related: rhbz#1121678
+- filesystem -> file system (clumens)
+  Related: rhbz#1121678
+- Change the accelerator key for Add DASD label. (sbueno+anaconda)
+  Related: rhbz#1070115
+- Add dialog box for adding DASDs. (sbueno+anaconda)
+  Resolves: rhbz#1070115
+- Add a button for adding an ECKD DASD. (sbueno+anaconda)
+  Resolves: rhbz#1070115
+- network: add s390 network ifcfg options also for bond slaves (rvykydal)
+  Resolves: rhbz#1090558
+
+* Fri Sep 05 2014 David Lehman <dlehman@redhat.com> - 19.31.88-1
+- Adjust to python-blivet-0.61.0.1
+  Related: rhbz#1075561
+- Make rescue_mode part of flags, hence more publicly available (amulhern)
+  Related: rhbz#1090009
+  Related: rhbz#1075561
+- Use human readable sizes with two decimal spaces in the GUI (vpodzime)
+  Resolves: rhbz#1067080
+  Related: rhbz#1075561
+- fix inst.virtiolog (wwoods)
+  Resolves: rhbz#1074499
+- network: don't crash, just log for unrecognized bond options (rvykydal)
+  Resolves: rhbz#1039006
+- network: don't traceback on invalid team options (rvykydal)
+  Resolves: rhbz#1114282
+- Add a Licensing category (mkolman)
+  Related: rhbz#1039677
+
+* Wed Sep 03 2014 Brian C. Lane <bcl@redhat.com> - 19.31.87-1
+- Filter out devices with no media from custom (bcl)
+  Resolves: rhbz#1049446
+- Skip nvram update on ppc64 image/dir installations (bcl)
+  Resolves: rhbz#1136486
+- For yum-based installs, move the progress bar while packages are installing.
+  (clumens)
+  Related: rhbz#1024403
+- Sync up step counts in install.py with reality. (clumens)
+  Related: rhbz#1024403
+- Change a confusing string in TUI NFS configuration screen. (sbueno+anaconda)
+  Resolves: rhbz#1057690
+- Split kickstart arg handling (bcl)
+  Related: rhbz#1088459
+- Fix --kickstart option (bcl)
+  Related: rhbz#1088459
+- Add anaconda_options.txt to makeupdates (dshea)
+  Related: rhbz#1088459
+- Allow the location of anaconda_options.txt to be overridden (dshea)
+  Related: rhbz#1088459
+- Add help texts to Anaconda CLI options (mkolman)
+  Related: rhbz#1088459
+- Use booleans and direct assignments for flags (mkolman)
+  Related: rhbz#1088459
+- Remove obsolete and disused Anaconda options (mkolman)
+  Related: rhbz#1088459
+- Move Anaconda version detection from isys to Python code (mkolman)
+  Related: rhbz#1088459
+- Parse boot options before parsing CLI options (mkolman)
+  Related: rhbz#1088459
+- Format the help text to properly fit to the terminal window (mkolman)
+  Related: rhbz#1088459
+- Switch Anaconda to argparse (mkolman)
+  Related: rhbz#1088459
+- Don't overwrite function argument when parsing help texts (mkolman)
+  Related: rhbz#1088459
+- Return CLI help text and version without delay (mkolman)
+  Related: rhbz#1088459
+- network: copy resolv.conf to chroot before installing packages (rvykydal)
+  Resolves: rhbz#1048520
+- network: fix crash on empty ksdevice boot option (rvykydal)
+  Resolves: rhbz#1096846
+
+* Thu Aug 28 2014 Brian C. Lane <bcl@redhat.com> - 19.31.86-1
+- CmdlineError should exit with a 1 (bcl)
+  Related: rhbz#1102318
+- Do not attempt to run authconfig if it doesn't exist. (clumens)
+  Related: rhbz#1123479
+- Provide ways in kickstart to skip kernel and bootloader. (clumens)
+  Related: rhbz#1123479
+- Implement %%packages --instLangs. (dshea)
+  Related: rhbz#1123479
+- Allow skipping installation of the core group, if asked for in kickstart.
+  (clumens)
+  Related: rhbz#1123479
+- Default PE size to blivet's default when requested from kickstart (vpodzime)
+  Resolves: rhbz#1098139
+- Re-enable addons as additional repositories. (clumens)
+  Resolves: rhbz#1061174
+- Fix installing from a second iso (bcl)
+  Resolves: rhbz#1040722
+- Don't change langpacks config of installer environment (rvykydal)
+  Resolves: rhbz#1066017
+- network: don't write HWADDR in ifcfgs generated by kickstart (rvykydal)
+  Resolves: rhbz#1130042
+- Use one thread for payload setup. (dshea)
+  Resolves: rhbz#1125927
+- Move the Anaconda class to a proper module (vpodzime)
+  Related: rhbz#1125927
+- Remove logging to tty3 and tty5 (bcl)
+  Resolves: rhbz#1073336
+
+* Fri Aug 22 2014 Brian C. Lane <bcl@redhat.com> - 19.31.85-1
+- Check host filesystem space for dirinstall (bcl)
+  Resolves: rhbz#1078876
+- Fix bad indentation in my last commit. (clumens)
+  Related: rhbz#980483
+- Fix problems with the hdiso method. (clumens)
+  Resolves: rhbz#980483
+- Write the grub config even on errors
+  Related: rhbz#1129435
+
+* Mon Aug 18 2014 Brian C. Lane <bcl@redhat.com> - 19.31.84-1
+- Only install liveinst symlink on supported arches (bcl)
+  Related: rhbz#1121678
+
+* Fri Aug 15 2014 Brian C. Lane <bcl@redhat.com> - 19.31.83-1
+- Write storage after liveimg install (bcl)
+  Related: rhbz#1080396
+- Add some sanity checking to live payload (vpodzime)
+  Related: rhbz#1080396
+- Add support for tarfiles to liveimg kickstart command (bcl)
+  Resolves: rhbz#1080396
+- Mountpoint encrypted checkbox reflects container state (bcl)
+  Resolves: rhbz#1076171
+- Block leaf device encryption if container is encrypted consistently
+  (vpodzime)
+  Related: rhbz#1076171
+- Fix gettext_potfiles.py for rhel7-branch (dshea). (clumens)
+  Related: rhbz#1121678
+- Add an option to makebumpver to skip all checks. (clumens)
+  Related: rhbz#1121678
+- Include .glade.h in the source distribution (dshea). (clumens)
+  Related: rhbz#1121678
+- Pass --enable-gtk-doc to configure in distcheck (dshea)
+  Related: rhbz#1121678
+- Fix the handling of files generated for xgettext (dshea)
+  Related: rhbz#1121678
+- Fix the liveinst install/uninstall hooks (dshea)
+  Related: rhbz#1121678
+- Always use $prefix in directory names. (dshea)
+  Related: rhbz#1121678
+- Use libtool with gtkdoc-scanobj (dshea)
+  Related: rhbz#1121678
+- Move the intltool Makefile rules into configure.ac (dshea)
+  Related: rhbz#1121678
+- Fix the wildcard usage in automake files. (dshea)
+  Related: rhbz#1121678
+- Write sslverify=0 for url kickstart method (bcl)
+  Resolves: rhbz#1116858
+- Add noverifyssl and proxy support to dracut ks handling (bcl)
+  Resolves: rhbz#1116858
+- Log installation successes and failures via ipmitool. (clumens)
+  Resolves: rhbz#782019
+- Suppress selinux error log when using default (bcl)
+  Resolves: rhbz#1083239
+- Skip source and software spoke in text live installations (bcl)
+  Resolves: rhbz#1092763
+- Default the OK button on the iscsi dialog to insensitive. (clumens)
+  Resolves: rhbz#975823
+- Change strings per stylistic advice from ECS (dshea)
+  Resolves: rhbz#1035898
+- Untranslate the type column of the network device type combobox (dshea)
+  Related: rhbz#1035898
+- Always define a continueButton and quitButton property. (clumens)
+  Related: rhbz#1121678
+- Resolve problems detected by our glade tests. (clumens)
+  Related: rhbz#1121678
+- Remove log_picker. (clumens)
+  Related: rhbz#1121678
+- Add missing files to dist (dshea)
+  Related: rhbz#1121678
+- Fix pre-processing of files for xgettext. (dshea)
+  Related: rhbz#1121678
+- Take care of strings with multiple substitutions. (clumens)
+  Related: rhbz#1121678
+- Remove lots of unused code from isys. (clumens)
+  Related: rhbz#1121678
+- Ignore a couple places where pylint warns us about accessing yum. (clumens)
+  Related: rhbz#1121678
+- Deal with all the methods where argument numbers differ. (clumens)
+  Related: rhbz#1121678
+- The Desktop class doesn't need to inherit from SimpleConfigFile. (clumens)
+  Related: rhbz#1121678
+- Fix up most of the "has no member" errors. (clumens)
+  Related: rhbz#1121678
+- Fix up all the redefined attribute errors. (clumens)
+  Related: rhbz#1121678
+- Make sure variables are defined in a __init__ method. (clumens)
+  Related: rhbz#1121678
+- Take care of some one-off pylint errors. (clumens)
+  Related: rhbz#1121678
+- Avoid the use of NamedTuple._make (dshea)
+  Related: rhbz#1121678
+- Modify the gtk_warning function in anaconda to use gtk3. (clumens)
+  Related: rhbz#1121678
+- Fix translation errors caught by our custom pylint tests. (clumens)
+  Related: rhbz#1121678
+- Take care of some one-off pylint errors. (clumens)
+  Related: rhbz#1121678
+- Get rid of too-general exception handling. (clumens)
+  Related: rhbz#1121678
+- Fix warnings about abstract methods not being overridden. (clumens)
+  Related: rhbz#1121678
+- Remove the lines to ignore E0611. (clumens)
+  Related: rhbz#1121678
+- Do not use sets or lists as default arguments to functions. (clumens)
+  Related: rhbz#1121678
+- Get rid of unnecessary lambdas. (clumens)
+  Related: rhbz#1121678
+- Get rid of unused variables. (clumens)
+  Related: rhbz#1121678
+- Use r"" for certain regular expressions. (clumens)
+  Related: rhbz#1121678
+- Use "raise Exception()" instead of "raise Exception, ..." (clumens)
+  Related: rhbz#1121678
+- Don't redefine built-in python keywords and methods. (clumens)
+  Related: rhbz#1121678
+- Get rid of all unused imports. (clumens)
+  Related: rhbz#1121678
+- Fix all indentation errors. (clumens)
+  Related: rhbz#1121678
+- Convert logging calls to not do string substitution. (clumens)
+  Related: rhbz#1121678
+- Add missing source files to po/POTFILES.in. (clumens)
+  Related: rhbz#1121678
+- Use the RHEL7 versions of kickstart command objects. (clumens)
+  Related: rhbz#1121678
+- Hook up the new test cases to automake/autoconf. (clumens)
+  Related: rhbz#1121678
+- Copy the tests/ directory from master over, less the gui tests. (clumens)
+  Related: rhbz#1121678
+- Remove the existing tests/ directory. (clumens)
+  Related: rhbz#1121678
+- Return int instead of Decimal when getting available free space (vpodzime)
+  Related: rhbz#1053462
+- Set rpm macro information in anaconda-yum. (dshea)
+  Resolves: rhbz#1114586
+- Keep selection when switching environments (mkolman)
+  Related: rhbz#1043655
+- Populate the repo store before changed can ever be called (clumens).
+  Related: rhbz#1119867
+- Install selected ks repos to target (bcl)
+  Resolves: rhbz#1119867
+- Add check for the format of grub2 encrypted password (bcl)
+  Related: rhbz#1070327
+- Don't use geolocation when installing with kickstart (mkolman)
+  Resolves: rhbz#1111717
+- Check xconfig before setting the installed displaymode (dshea)
+  Resolves: rhbz#1081768
+- Allow a wider variety of mountpoints (dshea)
+  Resolves: rhbz#1109140
+- Fix the handling of kickstart NFS repos with options (dshea)
+  Resolves: rhbz#1121008
+- Wrap the custom partitioning note (dshea)
+  Resolves: rhbz#1098320
+- Add support ppc64le (hamzy)
+  Resolves: rhbz#1125474
+- Cleanup arch tests (dshea)
+  Related: rhbz#1125474
+- Do not write out the vconsole.* boot options (vpodzime)
+  Resolves: rhbz#1111405
+- Use blivet's getFreeSpace for limitting automatic swap size (vpodzime)
+  Resolves: rhbz#1053462
+
+* Fri Aug 08 2014 Brian C. Lane <bcl@redhat.com> - 19.31.82-1
+- Use low level file i/o for rpm callback logging (bcl)
+  Resolves: rhbz#1035745
+- Allow AddonData classes to parse options in the %%addon line (dshea)
+  Resolves: rhbz#1065674
+- Display a fatal error if unable to encrypt a password. (dshea)
+  Resolves: rhbz#1057032
+- Filter empty comps groups from both specific and generic lists (dshea)
+  Resolves: rhbz#1071359
+- Let Gtk pick the size for the isoChooserDialog (clumens)
+  Resolves: rhbz#1063840
+- Give a more correct error for missing groups/packages on exclude (clumens).
+  Resolves: rhbz#1060194
+- Clear out errors at the beginning of _save_right_side. (clumens)
+  Resolves: rhbz#1070504
+- Add more information to the custom part summary dialog. (clumens)
+  Resolves: rhbz#975804
+- Check that bootloader devices are configured before validating (dshea)
+  Related: rhbz#1070283
+- Fix the User subclass using an old version of the pykickstart superclass.
+  (clumens)
+  Resolves: rhbz#1083928
+- Don't require user creation when root is locked (bcl)
+  Resolves: rhbz#1030626
+- Add platform specific group selection (bcl)
+  Resolves: rhbz#884385
+- Make parse-kickstart aware of the %%addon section (vpodzime)
+  Resolves: rhbz#1083002
+- Don't install implicitly added but explicitly excluded packages (vpodzime)
+  Resolves: rhbz#1105013
+
+* Fri Aug 01 2014 Brian C. Lane <bcl@redhat.com> - 19.31.81-1
+- Highlight languages in langsupport that contain selected locales (dshea)
+  Resolves: rhbz#1072355
+- Add a wrapper function for GtkTreeViewColumn.set_cell_data_func (dshea)
+  Related: rhbz#1072355
+- Don't add redundant grub installs if stage1 is not a disk (dshea)
+  Resolves: rhbz#1070283
+- Don't use dhcp ntpservers for dir or image installation (bcl)
+  Resolves: rhbz#1088506
+- Preserve net.ifnames cmdline arg (bcl)
+  Resolves: rhbz#1102410
+- Add autopart --fstype support (bcl)
+  Resolves: rhbz#1112697
+- Don't skip cpfmtxa formatted dasds if zerombr specified in ks.
+  (sbueno+anaconda)
+  Resolves: rhbz#1073982
+- rpmostreepayload: create /var/spool/mail required when adding user (rvykydal)
+  Resolves: rhbz#1113535
+- rpmostreepayload: Don't recreateInitrds for this payload (walters)
+  Resolves: rhbz#1113535
+- Use absolute path for extlinux/menu.c32 (rvykydal)
+  Resolves: rhbz#1113535
+- Only fail on a missing firewalld command if the firewall is enabled.
+  (clumens)
+  Resolves: rhbz#1113535
+- Make sure /var/log/anaconda gets copied under the right root. (clumens)
+  Resolves: rhbz#1113535
+- format.setup in blivet takes only kwargs. (clumens)
+  Resolves: rhbz#1113535
+- rpmostreepayload: Use systemd-tmpfiles rather than handrolling mkdir
+  (walters)
+  Resolves: rhbz#1113535
+- Make an ostree string easier for translators to deal with. (clumens)
+  Resolves: rhbz#1113535
+- Add RPMOSTreePayload (walters)
+  Resolves: rhbz#1113535
+- bootloader: Allow extlinux loader configuration to handle RPMOSTreePayload
+  case (walters)
+  Resolves: rhbz#1113535
+- install: Handle distinct physical root/sysroot (walters)
+  Resolves: rhbz#1113535
+- install: Move Payload postInstall() after bootloader (walters)
+  Resolves: rhbz#1113535
+- iutil: Transparently redirect anyone who asks root=/mnt/sysimage to sysroot
+  (walters)
+  Resolves: rhbz#1113535
+- main: Set flags.extlinux if extlinux is used in interactive-defaults.ks
+  (walters)
+  Resolves: rhbz#1113535
+- iutil: Introduce getSysroot()/getTargetPhysicalRoot(), use instead of
+  ROOT_PATH (walters)
+  Resolves: rhbz#1113535
+- Use ROOT_PATH not /mnt/sysimage (bcl)
+  Resolves: rhbz#1113535
+- Override ROOT_PATH with environmental variable (bcl)
+  Resolves: rhbz#1113535
+- gui/spokes/software: Enable iff payload is PackagePayload (walters)
+  Resolves: rhbz#1113535
+
+* Fri Jul 25 2014 Brian C. Lane <bcl@redhat.com> - 19.31.80-1
+- Retranslate language filtering placeholder texts (vpodzime)
+  Resolves: rhbz#1091885
+- Set the selinux state from the command line (dshea)
+  Resolves: rhbz#1084524
+- Don't create the configured.ini file (mkolman)
+  Resolves: rhbz#1119166
+- Don't crash on anaconda-yum output containing multiple colons (mkolman)
+  Resolves: rhbz#1092473
 
 * Tue Apr 29 2014 Brian C. Lane <bcl@redhat.com> - 19.31.79-1
 - network: fix device configuration in text mode (rvykydal)
