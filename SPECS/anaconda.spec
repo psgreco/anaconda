@@ -2,6 +2,8 @@
 
 Summary: Graphical system installer
 Name:    anaconda
+Patch1:	anaconda-centos-add-centos-install-class.patch
+Patch2:	anaconda-centos-set-right-eula-location.patch
 Version: 19.31.123
 Release: 1%{?dist}
 License: GPLv2+
@@ -229,6 +231,8 @@ This package hold the content for the Anaconda built-in help system.
 
 %prep
 %setup -q
+%patch1 -p1
+%patch2 -p1
 %setup -a 1
 
 %build
@@ -327,6 +331,10 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/anaconda/help/*
 
 %changelog
+* Thu Mar 05 2015 CentOS Sources <bugs@centos.org> - 19.31.123-1.el7.centos
+- Add CentOS install class as default
+- use the right path for the EULA string (issue 7165,  bstinson)
+
 * Mon Feb 16 2015 Brian C. Lane <bcl@redhat.com> - 19.31.123-1
 - iscsi: pass rd.* options of devices to be mouted in dracut (rvykydal)
   Resolves: rhbz#1192398
