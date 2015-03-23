@@ -4,8 +4,11 @@ Summary: Graphical system installer
 Name:    anaconda
 Patch1:	anaconda-centos-add-centos-install-class.patch
 Patch2:	anaconda-centos-set-right-eula-location.patch
+Patch3: anaconda-centos-efidir-centos.patch
+Patch4: anaconda-centos-disable-mirrors.patch
+Patch5: anaconda-centos-bootfs-default-to-xfs.patch
 Version: 19.31.123
-Release: 1%{?dist}
+Release: 1%{?dist}.1
 License: GPLv2+
 Group:   Applications/System
 URL:     http://fedoraproject.org/wiki/Anaconda
@@ -233,6 +236,9 @@ This package hold the content for the Anaconda built-in help system.
 %setup -q
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
 %setup -a 1
 
 %build
@@ -331,6 +337,9 @@ update-desktop-database &> /dev/null || :
 %{_datadir}/anaconda/help/*
 
 %changelog
+* Fri Mar 20 2015 Karanbir Singh <kbsingh@centos.org> - 19.31.123-1.el7.centos.1
+- Add path to restore installclass, set EULA path, ensure xfs as default
+
 * Thu Mar 05 2015 CentOS Sources <bugs@centos.org> - 19.31.123-1.el7.centos
 - Add CentOS install class as default
 - use the right path for the EULA string (issue 7165,  bstinson)
