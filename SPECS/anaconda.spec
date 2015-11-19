@@ -14,6 +14,11 @@ URL:     http://fedoraproject.org/wiki/Anaconda
 # ./autogen.sh
 # make dist
 Source0: %{name}-%{version}.tar.bz2
+Patch1:	anaconda-centos-add-centos-install-class.patch
+Patch2:	anaconda-centos-set-right-eula-location.patch
+Patch3:	anaconda-centos-efidir-centos.patch
+Patch4:	anaconda-centos-disable-mirrors.patch
+Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -223,6 +228,11 @@ runtime on NFS/HTTP/FTP servers or local disks.
 
 %prep
 %setup -q
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
 
 %build
 %configure --disable-static \
@@ -314,6 +324,13 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Thu Nov 19 2015 CentOS Sources <bugs@centos.org> - 21.48.22.56-1.el7.centos
+- Add CentOS install class as default
+- use the right path for the EULA string (issue 7165,  bstinson)
+- use efi_dir = centos
+- disable the mirrorlist options
+- make boot part fs default to xfs
+
 * Thu Oct 29 2015 Brian C. Lane <bcl@redhat.com> - 21.48.22.56-1
 - Ignore interfaces with invalid VLAN IDs. (dshea)
   Resolves: rhbz#1274893
