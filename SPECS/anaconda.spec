@@ -3,7 +3,7 @@
 Summary: Graphical system installer
 Name:    anaconda
 Version: 21.48.22.56
-Release: 2%{?dist}
+Release: 3%{?dist}
 License: GPLv2+ and MIT
 Group:   Applications/System
 URL:     http://fedoraproject.org/wiki/Anaconda
@@ -329,6 +329,8 @@ update-desktop-database &> /dev/null || :
 - discard efivar patch, rolled into install class
 - setup new help text 
 - rebase install class
+- ensure productName is available in the yumpayload
+- use our own stubs for help
 
 * Thu Nov 19 2015 CentOS Sources <bugs@centos.org> - 21.48.22.56-1.el7.centos
 - Add CentOS install class as default
