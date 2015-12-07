@@ -23,3 +23,14 @@ diff -uNr anaconda-21.48.22.56__orig/pyanaconda/packaging/yumpayload.py anaconda
  
      def getRepo(self, repo_id):
          """ Return the yum repo object. """
+diff -uNr anaconda-21.48.22.56__orig/pyanaconda/packaging/yumpayload.py anaconda-21.48.22.56/pyanaconda/packaging/yumpayload.py
+--- anaconda-21.48.22.56__orig/pyanaconda/packaging/yumpayload.py	2015-12-07 21:29:36.058347960 +0000
++++ anaconda-21.48.22.56/pyanaconda/packaging/yumpayload.py	2015-12-07 21:32:50.255770594 +0000
+@@ -43,6 +43,7 @@
+ from pyanaconda.iutil import execReadlines
+ from pyanaconda.simpleconfig import simple_replace
+ from functools import wraps
++from pyanaconda.product import productName 
+ 
+ import logging
+ log = logging.getLogger("packaging")
