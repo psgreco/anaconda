@@ -3,7 +3,7 @@
 Summary: Graphical system installer
 Name:    anaconda
 Version: 21.48.22.56
-Release: 3%{?dist}
+Release: 4%{?dist}
 License: GPLv2+ and MIT
 Group:   Applications/System
 URL:     http://fedoraproject.org/wiki/Anaconda
@@ -182,7 +182,7 @@ Requires: keybinder3
 Requires: NetworkManager-wifi
 %endif
 Requires: yelp
-Requires: anaconda-user-help >= %{helpver}
+#Requires: anaconda-user-help >= %{helpver}
 
 %description gui
 This package contains graphical user interface for the Anaconda installer.
@@ -331,6 +331,7 @@ update-desktop-database &> /dev/null || :
 - rebase install class
 - ensure productName is available in the yumpayload
 - use our own stubs for help
+- remove the hard dep for anaconda-user-help ( since its far too upstream specific )
 
 * Thu Nov 19 2015 CentOS Sources <bugs@centos.org> - 21.48.22.56-1.el7.centos
 - Add CentOS install class as default
