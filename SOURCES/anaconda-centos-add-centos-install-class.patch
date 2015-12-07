@@ -60,8 +60,8 @@ diff -uNr anaconda-21.48.22.56__orig/pyanaconda/installclasses/centos.py anacond
 +
 +    efi_dir = "centos"
 +
-+    help_placeholder = "RHEL7Placeholder.html"
-+    help_placeholder_with_links = "RHEL7PlaceholderWithLinks.html"
++    help_placeholder = "CentOSPlaceholder.html"
++    help_placeholder_with_links = "CentOSPlaceholder.html"
 +
 +    def configure(self, anaconda):
 +        BaseInstallClass.configure(self, anaconda)
