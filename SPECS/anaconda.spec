@@ -3,7 +3,7 @@
 Summary: Graphical system installer
 Name:    anaconda
 Version: 21.48.22.56
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPLv2+ and MIT
 Group:   Applications/System
 URL:     http://fedoraproject.org/wiki/Anaconda
@@ -19,6 +19,7 @@ Patch2:	anaconda-centos-set-right-eula-location.patch
 Patch4:	anaconda-centos-disable-mirrors.patch
 Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
 Patch6:	anaconda-centos-help-text.patch
+Patch7:	anaconda-centos-skip-retry-if-not-connected.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -233,6 +234,7 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 
 %build
 %configure --disable-static \
@@ -324,7 +326,7 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
-* Mon Dec  7 2015 Karanbir Singh <kbsingh@centos.org> - 21.48.22.56-2.el7.centos
+* Mon Dec  7 2015 Karanbir Singh <kbsingh@centos.org> - 21.48.22.56-5.el7.centos
 - Forward port existing patch
 - discard efivar patch, rolled into install class
 - setup new help text 
@@ -332,6 +334,7 @@ update-desktop-database &> /dev/null || :
 - ensure productName is available in the yumpayload
 - use our own stubs for help
 - remove the hard dep for anaconda-user-help ( since its far too upstream specific )
+- Skip repo md retry if we are not online ( try at most 2 times (
 
 * Thu Nov 19 2015 CentOS Sources <bugs@centos.org> - 21.48.22.56-1.el7.centos
 - Add CentOS install class as default
