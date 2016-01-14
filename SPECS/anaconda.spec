@@ -3,7 +3,7 @@
 Summary: Graphical system installer
 Name:    anaconda
 Version: 21.48.22.56
-Release: 5%{?dist}
+Release: 5%{?dist}.1
 License: GPLv2+ and MIT
 Group:   Applications/System
 URL:     http://fedoraproject.org/wiki/Anaconda
@@ -20,6 +20,7 @@ Patch4:	anaconda-centos-disable-mirrors.patch
 Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
 Patch6:	anaconda-centos-help-text.patch
 Patch7:	anaconda-centos-skip-retry-if-not-connected.patch
+Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -235,6 +236,7 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
 
 %build
 %configure --disable-static \
@@ -326,6 +328,9 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Thu Jan 14 2016 Karanbir Singh <kbsingh@centos.org> - 21.48.22.56-5.el7.centos.1
+- Handle CentOS infra specific atomic remotes
+
 * Mon Dec  7 2015 Karanbir Singh <kbsingh@centos.org> - 21.48.22.56-5.el7.centos
 - Forward port existing patch
 - discard efivar patch, rolled into install class
