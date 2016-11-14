@@ -19,6 +19,8 @@ Patch2:	anaconda-centos-set-right-eula-location.patch
 Patch4:	anaconda-centos-disable-mirrors.patch
 Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
 Patch6:	anaconda-centos-help-text.patch
+Patch7:	anaconda-centos-skip-retry-if-not-connected.patch
+Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -236,6 +238,8 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
+%patch8 -p1
 
 %build
 %configure --disable-static \
