@@ -16,9 +16,9 @@ URL:     http://fedoraproject.org/wiki/Anaconda
 Source0: %{name}-%{version}.tar.bz2
 Patch1:	anaconda-centos-add-centos-install-class.patch
 Patch2:	anaconda-centos-set-right-eula-location.patch
-Patch3:	anaconda-centos-efidir-centos.patch
 Patch4:	anaconda-centos-disable-mirrors.patch
 Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
+Patch6:	anaconda-centos-help-text.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -233,9 +233,9 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %setup -q
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 %build
 %configure --disable-static \
