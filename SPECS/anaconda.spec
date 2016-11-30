@@ -21,7 +21,6 @@ Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
 Patch6:	anaconda-centos-help-text.patch
 Patch7:	anaconda-centos-skip-retry-if-not-connected.patch
 Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
-Patch9: anaconda-centos-add-centos-install-class.patch
  
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -241,7 +240,6 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
-%patch9 -p1
 
 %build
 %configure --disable-static \
@@ -334,8 +332,8 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
-* Wed Nov 30 2016 Johnny Hughes <johnny@centos.org> 21.48.22.93-1.el7.centos.0.1
-- added patch9
+* Thu Nov 30 2016 Johnny Hughes <johnny@centos.org> - 21.48.22.93-1.el7.centos.0.1
+- Refactor anaconda-centos-add-centos-install-class.patch for NM Autoconnect issue
 
 * Thu Nov 03 2016 CentOS Sources <bugs@centos.org> - 21.48.22.93-1.el7.centos
 - Add CentOS install class as default
