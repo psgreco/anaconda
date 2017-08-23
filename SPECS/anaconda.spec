@@ -16,10 +16,12 @@ URL:     http://fedoraproject.org/wiki/Anaconda
 Source0: %{name}-%{version}.tar.bz2
 Patch1:	anaconda-centos-add-centos-install-class.patch
 Patch2:	anaconda-centos-set-right-eula-location.patch
-Patch3:	anaconda-centos-efidir-centos.patch
 Patch4:	anaconda-centos-disable-mirrors.patch
 Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
-
+Patch6:	anaconda-centos-help-text.patch
+Patch7:	anaconda-centos-skip-retry-if-not-connected.patch
+Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
+ 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %define gettextver 0.18.1
@@ -182,7 +184,7 @@ Requires: keybinder3
 Requires: NetworkManager-wifi
 %endif
 Requires: yelp
-Requires: anaconda-user-help >= %{helpver}
+#Requires: anaconda-user-help >= %{helpver}
 
 # Needed to compile the gsettings files
 BuildRequires: gsettings-desktop-schemas
@@ -233,9 +235,11 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %setup -q
 %patch1 -p1
 %patch2 -p1
-%patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
 
 %build
 %configure --disable-static \
@@ -328,6 +332,9 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
+* Tue Aug 22 2017 Johnny Hughes <johnny@centos.org> - 21.48.22.121-1.el7.centos
+- Refactor anaconda-centos-add-centos-install-class.patch for NM Autoconnect issue
+
 * Mon Jul 31 2017 CentOS Sources <bugs@centos.org> - 21.48.22.121-1.el7.centos
 - Add CentOS install class as default
 - use the right path for the EULA string (issue 7165,  bstinson)
