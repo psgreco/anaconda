@@ -2,7 +2,7 @@
 
 Summary: Graphical system installer
 Name:    anaconda
-Version: 21.48.22.121
+Version: 21.48.22.134
 Release: 1%{?dist}
 License: GPLv2+ and MIT
 Group:   Applications/System
@@ -14,47 +14,41 @@ URL:     http://fedoraproject.org/wiki/Anaconda
 # ./autogen.sh
 # make dist
 Source0: %{name}-%{version}.tar.bz2
-Patch1:	anaconda-centos-add-centos-install-class.patch
-Patch2:	anaconda-centos-set-right-eula-location.patch
-Patch4:	anaconda-centos-disable-mirrors.patch
-Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
-Patch6:	anaconda-centos-help-text.patch
-Patch7:	anaconda-centos-skip-retry-if-not-connected.patch
-Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
- 
+
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
+%define dbusver 1.2.3
+%define dracutver 033-240
+%define fcoeutilsver 1.0.12-3.20100323git
+%define firewalldver 0.3.5-1
 %define gettextver 0.18.1
+%define gtk3ver 3.22.10
+%define helpver 1:7.5.3-1
 %define intltoolver 0.31.2-3
-%define pykickstartver 1.99.66.12
-%define yumver 3.4.3-91
+%define iscsiver 6.2.0.870-3
+%define isomd5sum 1.0.10
+%define langtablever 0.0.31-3
+%define libarchivever 3.0.4
+%define libtimezonemapver 0.4.1-2
+%define libxklavierver 5.4
+%define mehver 0.23-1
+%define nmver 1.0.0-6.git20150107
 %define partedver 1.8.1
+%define pykickstartver 1.99.66.18
 %define pypartedver 2.5-2
 %define pythonpyblockver 0.45
-%define nmver 1.0.0-6.git20150107
-%define dbusver 1.2.3
-%define yumutilsver 1.1.11-3
-%define mehver 0.23-1
-%define sckeyboardver 1.3.1
-%define firewalldver 0.3.5-1
 %define pythonurlgrabberver 3.9.1-5
-%define utillinuxver 2.15.1
-%define dracutver 033-240
-%define isomd5sum 1.0.10
-%define fcoeutilsver 1.0.12-3.20100323git
-%define iscsiver 6.2.0.870-3
 %define rpmver 4.10.0
-%define libarchivever 3.0.4
-%define langtablever 0.0.31-3
-%define libxklavierver 5.4
-%define libtimezonemapver 0.4.1-2
-%define helpver 1:7.3.1-1
+%define sckeyboardver 1.3.1
+%define utillinuxver 2.15.1
+%define yumutilsver 1.1.11-3
+%define yumver 3.4.3-91
 
 BuildRequires: audit-libs-devel
 BuildRequires: gettext >= %{gettextver}
-BuildRequires: gtk3-devel
+BuildRequires: gtk3-devel >= %{gtk3ver}
 BuildRequires: gtk-doc
-BuildRequires: gtk3-devel-docs
+BuildRequires: gtk3-devel-docs >= %{gtk3ver}
 BuildRequires: glib2-doc
 BuildRequires: gobject-introspection-devel
 BuildRequires: glade-devel
@@ -184,7 +178,7 @@ Requires: keybinder3
 Requires: NetworkManager-wifi
 %endif
 Requires: yelp
-#Requires: anaconda-user-help >= %{helpver}
+Requires: anaconda-user-help >= %{helpver}
 
 # Needed to compile the gsettings files
 BuildRequires: gsettings-desktop-schemas
@@ -233,13 +227,6 @@ runtime on NFS/HTTP/FTP servers or local disks.
 
 %prep
 %setup -q
-%patch1 -p1
-%patch2 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
 
 %build
 %configure --disable-static \
@@ -332,15 +319,115 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
-* Tue Aug 22 2017 Johnny Hughes <johnny@centos.org> - 21.48.22.121-1.el7.centos
-- Refactor anaconda-centos-add-centos-install-class.patch for NM Autoconnect issue
+* Mon Feb 19 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.134-1
+- Revert "UI support for configuring certain mitigations (mkolman)"
+  Resolves: rhbz#1546267
+- Revert "Performance spoke related CI fixes" (mkolman)
+  Related: rhbz#1546267
+- Revert "Fix mitigation toggling with kickstart" (mkolman)
+  Related: rhbz#1546267
 
-* Mon Jul 31 2017 CentOS Sources <bugs@centos.org> - 21.48.22.121-1.el7.centos
-- Add CentOS install class as default
-- use the right path for the EULA string (issue 7165,  bstinson)
-- use efi_dir = centos
-- disable the mirrorlist options
-- make boot part fs default to xfs
+* Wed Feb 14 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.133-1
+- Fix mitigation toggling with kickstart (mkolman)
+  Related: rhbz#1534833
+
+* Mon Feb 12 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.132-1
+- Performance spoke related CI fixes (mkolman)
+  Related: rhbz#1534833
+
+* Wed Feb 07 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.131-1
+- UI support for configuring certain mitigations (mkolman)
+  Resolves: rhbz#1534833
+
+* Mon Jan 08 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.130-1
+- kickstart: use RHEL7_Firewall instead of F28_Firewall (dusty)
+  Related: rhbz#1526450
+- kickstart: support firewall --use-system-defaults (dusty)
+  Resolves: rhbz#1526450
+- Check payload is set before accessing its data (mkolman)
+  Resolves: rhbz#1524785
+- Fix bad bash '*' expansion when loading kernel modules (jkonecny)
+  Resolves: rhbz#1519220
+
+* Fri Dec 08 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.129-1
+- Update translations (ljanda)
+  Resolves: rhbz#1480523
+
+* Wed Nov 15 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.128-1
+- Add support for the new 'mount' kickstart command (vpodzime)
+  Resolves: rhbz#1450922
+
+* Tue Nov 07 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.127-1
+- Enable SE/HMC file access to repo (vponcova)
+  Resolves: rhbz#1289918
+- Support timeout and retries options in %%packages section (vponcova)
+  Resolves: rhbz#1448459
+
+* Thu Oct 12 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.126-1
+- Add support for the RHV branded help content variant (mkolman)
+  Resolves: rhbz#1378010
+
+* Thu Oct 05 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.125-1
+- Fix storage spoke completeness checking (rvykydal)
+  Resolves: rhbz#1496416
+- Missing dot in testing availability message (jkonecny)
+  Related: rhbz#1478970
+
+* Thu Sep 07 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.124-1
+- network: add support for kickstart --bindto=mac for virtual devices
+  (rvykydal)
+  Resolves: rhbz#1328576
+- network: support mac bound network settings as first class (rvykydal)
+  Related: rhbz#1328576
+- network: add support for kickstart --bindto=mac for wired devices (rvykydal)
+  Resolves: rhbz#1328576
+
+* Mon Sep 04 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.123-1
+- Skip temporarily unavailable checks in the source spoke (mkolman)
+  Resolves: rhbz#1365416
+- Fix restart payload thread in Network spoke GUI (jkonecny)
+  Related: rhbz#1478970
+- Add the boot option inst.xtimeout (vponcova)
+  Resolves: rhbz#1462035
+- Add missing gtk3 required version to spec file (jkonecny)
+  Resolves: rhbz#1445648
+- Sort spec required versions alphabetically (jkonecny)
+  Related: rhbz#1445648
+- Fix testing of the kickstart version (vponcova)
+  Related: rhbz#1412159
+- Add tests for the install class factory and the installclass command
+  (vponcova)
+  Related: rhbz#1412159
+- Support for the installclass kickstart command (vponcova)
+  Resolves: rhbz#1412159
+- Modules with install classes should define __all__ (vponcova)
+  Related: rhbz#1412159
+- Refactorization of the installclass.py (vponcova)
+  Related: rhbz#1412159
+- timezone: for kickstart allow also timezones not offered by GUI (rvykydal)
+  Resolves: rhbz#1452873
+
+* Tue Aug 22 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.122-1
+- Network spoke freeze when testing availability (jkonecny)
+  Related: rhbz#1478970
+- Fix proxy settings badly used when testing repos (jkonecny)
+  Resolves: rhbz#1478970
+- installclasses/rhelah: Bump default / to 15GB max (walters)
+  Resolves: rhbz#1481768
+- Prevent crash in GUI with incomplete IMSM array (mkolman)
+  Resolves: rhbz#1465944
+- Show IDs of DASDs to be formatted in TUI (vponcova)
+  Resolves: rhbz#1269174
+- rpmostreepayload: Rollup backport of Fedora patches (walters)
+  Resolves: rhbz#1459623
+- Use SHA256 instead of MD5 for repoMDHash (bcl)
+  Related: rhbz#1341280
+- Refactor imports in kickstart.py (jkonecny)
+  Related: rhbz#1463118
+- Use context manager to check KickstartError (jkonecny)
+  Resolves: rhbz#1463118
+- Use KickstartError instead of KickstartParseError (jkonecny)
+  Related: rhbz#1463118
 
 * Wed Jun 21 2017 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.121-1
 - rpmostreepayload: Stub out payload methods which use `import rpm` (walters)
