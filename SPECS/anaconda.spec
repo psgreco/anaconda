@@ -2,7 +2,7 @@
 
 Summary: Graphical system installer
 Name:    anaconda
-Version: 21.48.22.134
+Version: 21.48.22.147
 Release: 1%{?dist}
 License: GPLv2+ and MIT
 Group:   Applications/System
@@ -14,15 +14,7 @@ URL:     http://fedoraproject.org/wiki/Anaconda
 # ./autogen.sh
 # make dist
 Source0: %{name}-%{version}.tar.bz2
-Patch1:	anaconda-centos-add-centos-install-class.patch
-Patch2:	anaconda-centos-set-right-eula-location.patch
-Patch4:	anaconda-centos-disable-mirrors.patch
-Patch5:	anaconda-centos-bootfs-default-to-xfs.patch
-Patch6:	anaconda-centos-help-text.patch
-Patch7:	anaconda-centos-skip-retry-if-not-connected.patch
-Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
-Patch9: yumpayload-dont-verify-disabled-repos.patch
- 
+
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
 %define dbusver 1.2.3
@@ -42,7 +34,7 @@ Patch9: yumpayload-dont-verify-disabled-repos.patch
 %define mehver 0.23-1
 %define nmver 1.0.0-6.git20150107
 %define partedver 1.8.1
-%define pykickstartver 1.99.66.18
+%define pykickstartver 1.99.66.19
 %define pypartedver 2.5-2
 %define pythonpyblockver 0.45
 %define pythonurlgrabberver 3.9.1-5
@@ -97,7 +89,7 @@ The anaconda package is a metapackage for the Anaconda installer.
 
 %package core
 Summary: Core of the Anaconda installer
-Requires: python-blivet >= 1:0.61.15.60
+Requires: python-blivet >= 1:0.61.15.71
 Requires: python-meh >= %{mehver}
 Requires: libreport-anaconda >= 2.0.21-1
 Requires: libreport-rhel-anaconda-bugzilla >= 2.1.11-1
@@ -115,6 +107,7 @@ Requires: authconfig
 Requires: firewalld >= %{firewalldver}
 Requires: util-linux >= %{utillinuxver}
 Requires: dbus-python
+Requires: python-subprocess32
 Requires: python-pwquality
 Requires: python-IPy
 Requires: python-nss
@@ -141,6 +134,7 @@ Requires: rsync
 Requires: systemd
 %ifarch %{ix86} x86_64
 Requires: fcoe-utils >= %{fcoeutilsver}
+Requires: libblockdev-nvdimm
 %endif
 Requires: iscsi-initiator-utils >= %{iscsiver}
 %ifarch %{ix86} x86_64 ia64
@@ -186,7 +180,7 @@ Requires: keybinder3
 Requires: NetworkManager-wifi
 %endif
 Requires: yelp
-#Requires: anaconda-user-help >= %{helpver}
+Requires: anaconda-user-help >= %{helpver}
 
 # Needed to compile the gsettings files
 BuildRequires: gsettings-desktop-schemas
@@ -235,14 +229,6 @@ runtime on NFS/HTTP/FTP servers or local disks.
 
 %prep
 %setup -q
-%patch1 -p1
-%patch2 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
 
 %build
 %configure --disable-static \
@@ -335,12 +321,93 @@ update-desktop-database &> /dev/null || :
 %{_prefix}/libexec/anaconda/dd_*
 
 %changelog
-* Tue Apr 10 2018 CentOS Sources <bugs@centos.org> - 21.48.22.134-1.el7.centos
-- Add CentOS install class as default
-- use the right path for the EULA string (issue 7165,  bstinson)
-- use efi_dir = centos
-- disable the mirrorlist options
-- make boot part fs default to xfs
+* Wed Sep 26 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.147-1
+- Pull in new translations (rvykydal)
+  Related: rhbz#1569416
+
+* Wed Sep 19 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.146-1
+- Revert "If someone really wants to eject the cdrom, then do it. (jkonecny)"
+  Resolves: rhbz#1618408
+
+* Tue Aug 28 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.145-1
+- Pull in new translations (rvykydal)
+  Resolves: rhbz#1569416
+
+* Fri Jul 27 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.144-1
+- Don't allow unlocking and using of LUKS2 devices (vponcova)
+  Resolves: rhbz#1608251
+- Fix glade accelerator conflicts (rvykydal)
+  Related: rhbz#1602436
+- Add nvdimm files to POTFILES.in (rvykydal)
+  Related: rhbz#1602436
+- Support nvdimm only on x86_64 (rvykydal)
+  Resolves: rhbz#1602436
+
+* Fri Jun 22 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.143-1
+- Add data loss warning to nvdimm reconfigure dialog. (rvykydal)
+  Resolves: rhbz#1280500
+- Add UI feedback for disk repopulating after nvdimm reconfiguration.
+  (rvykydal)
+  Resolves: rhbz#1280500
+- Use only devices specified by nvdimm command for installation. (rvykydal)
+  Resolves: rhbz#1280500
+- Add option to reconfigure nvdimm devices into sector mode. (rvykydal)
+  Resolves: rhbz#1280500
+- Allow only devices in sector mode to be selected. (rvykydal)
+  Resolves: rhbz#1280500
+- Add nvdimm devices to Advanced Storage spoke. (rvykydal)
+  Resolves: rhbz#1280500
+- Add kickstart support for nvdimm reconfiguration to sector mode. (rvykydal)
+  Resolves: rhbz#1280500
+
+* Tue Jun 05 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.142-1
+- If someone really wants to eject the cdrom, then do it. (sbueno)
+  Resolves: rhbz#1499792
+
+* Wed May 30 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.141-1
+- Use subprocess32 to prevent concurrency issues. (rvykydal)
+  Resolves: rhbz#1581200
+
+* Wed May 23 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.140-1
+- Preserve the boot option zfcp.allow_lun_scan (vponcova)
+  Resolves: rhbz#1561662
+- Don't display "Alternate Architectures" in product name (rvykydal)
+  Resolves: rhbz#1488558
+
+* Wed May 16 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.139-1
+- installclasses/rhelah: Allow LVM thin and dm-crypt (walters)
+  Resolves: rhbz#1546252
+- Ask for a default passphrase if required (vponcova)
+  Resolves: rhbz#1436304
+- Add support for setting different types of passwords in TUI (vponcova)
+  Related: rhbz#1436304
+
+* Thu May 10 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.138-1
+- Fix crash on inst.noverifyssl with non-url method (rvykydal)
+  Resolves: rhbz#1515678
+
+* Wed May 02 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.137-1
+- Improve UI feedback for invalid boot on non-iBFT iSCSI devices. (rvykydal)
+  Related: rhbz#1562301
+- Add inst.nonibftiscsiboot boot option. (rvykydal)
+  Resolves: rhbz#1562301
+
+* Wed Apr 25 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.136-1
+- Once again fix cmdline error handling. (sbueno+anaconda)
+  Resolves: rhbz#1360223
+- Extend the timeout period to 180s in the case of cmdline error.
+  (sbueno+anaconda)
+  Resolves: rhbz#1360223
+- kickstart: "clearpart --list" does not work (marcel)
+  Resolves: rhbz#1561930
+
+* Mon Apr 16 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.135-1
+- Clear errors when a user updates partitioning settings (vponcova)
+  Resolves: rhbz#1535781
+- Don't try to create required partitions if there are none (vponcova)
+  Resolves: rhbz#1557485
+- Fix parsing of hostname from cmdline for ipv6. (rvykydal)
+  Resolves: rhbz#1554271
 
 * Mon Feb 19 2018 Radek Vykydal <rvykydal@redhat.com> - 21.48.22.134-1
 - Revert "UI support for configuring certain mitigations (mkolman)"
