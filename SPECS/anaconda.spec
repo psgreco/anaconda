@@ -22,6 +22,7 @@ Patch6: anaconda-centos-help-text.patch
 Patch7: anaconda-centos-skip-retry-if-not-connected.patch
 Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
 Patch9: yumpayload-dont-verify-disabled-repos.patch
+Patch10: anaconda-centos-armhfp-extloader.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -245,6 +246,9 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%ifarch %{arm}
+%patch10 -p1
+%endif
 
 %build
 %configure --disable-static \
