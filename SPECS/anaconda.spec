@@ -23,6 +23,7 @@ Patch7: anaconda-centos-skip-retry-if-not-connected.patch
 Patch8: 9800-rpmostreepayload-Rework-remote-add-handling.patch
 Patch9: yumpayload-dont-verify-disabled-repos.patch
 Patch10: anaconda-centos-armhfp-extloader.patch
+Patch11: anaconda-centos-really-add-centos-install-class.patch
 
 # Versions of required components (done so we make sure the buildrequires
 # match the requires versions of things).
@@ -249,6 +250,12 @@ runtime on NFS/HTTP/FTP servers or local disks.
 %ifarch %{arm}
 %patch10 -p1
 %endif
+
+pushd pyanaconda/installclasses/
+cp -f rhel.py centos.py
+popd
+
+%patch11 -p1
 
 %build
 %configure --disable-static \

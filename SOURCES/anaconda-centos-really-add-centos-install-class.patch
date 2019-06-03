@@ -1,0 +1,43 @@
+diff -aurp a/pyanaconda/installclasses/centos.py b/pyanaconda/installclasses/centos.py
+--- a/pyanaconda/installclasses/centos.py	2019-05-31 19:04:29.202239897 -0300
++++ b/pyanaconda/installclasses/centos.py	2019-05-31 19:01:14.000000000 -0300
+@@ -36,9 +36,9 @@ __all__ = ["RHELBaseInstallClass", "RHEL
+ 
+ 
+ class RHELBaseInstallClass(BaseInstallClass):
+-    name = "Red Hat Enterprise Linux"
+-    sortPriority = 20000
+-    if not productName.startswith("Red Hat "):
++    name = "CentOS Linux"
++    sortPriority = 20001
++    if not productName.startswith("CentOS"):
+         hidden = True
+     defaultFS = "xfs"
+ 
+@@ -50,10 +50,10 @@ class RHELBaseInstallClass(BaseInstallCl
+ 
+     _l10n_domain = "comps"
+ 
+-    efi_dir = "redhat"
++    efi_dir = "centos"
+ 
+-    help_placeholder = "RHEL7Placeholder.html"
+-    help_placeholder_with_links = "RHEL7PlaceholderWithLinks.html"
++    help_placeholder = "CentOSPlaceholder.html"
++    help_placeholder_with_links = "CentOSPlaceholderWithLinks.html"
+ 
+     def configure(self, anaconda):
+         BaseInstallClass.configure(self, anaconda)
+@@ -76,9 +76,9 @@ class RHELBaseInstallClass(BaseInstallCl
+         BaseInstallClass.__init__(self)
+ 
+ class RHELAtomicInstallClass(RHELBaseInstallClass):
+-    name = "Red Hat Enterprise Linux Atomic Host"
+-    sortPriority=21000
+-    hidden = not productName.startswith(("RHEL Atomic Host", "Red Hat Enterprise Linux Atomic"))
++    name = "CentOS Atomic Host"
++    sortPriority=21001
++    hidden = not productName.startswith(("CentOS Atomic Host", "CentOS Linux Atomic"))
+ 
+     def __init__(self):
+         self.localemap = {} # loaded lazily
